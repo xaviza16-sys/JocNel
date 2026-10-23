@@ -77,6 +77,27 @@ test('baby cannot jump and reaches mother by pushing and climbing', async ({ pag
   expect(errors).toEqual([]);
 });
 
+test('toddler finds the toy motorcycle before continuing to the rear-view race', async ({ page }) => {
+  test.setTimeout(45000);
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await choose(page, 'Les primeres passes');
+  await page.keyboard.down('ArrowRight');
+  for (let i = 0; i < 75; i++) {
+    if ((await page.locator('#status').innerText()).includes('MOTO TROBADA')) break;
+    await page.keyboard.press('Space'); await page.waitForTimeout(300);
+  }
+  await page.keyboard.up('ArrowRight');
+  await expect(page.locator('#status')).toContainText('MOTO TROBADA');
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await page.waitForTimeout(850);
+  await page.screenshot({ path: 'test-results/toddler-found-moto.png', fullPage: true });
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await expect(page.getByText(/Has trobat la teva moto de joguina, Nel!/)).toBeVisible();
+  await page.getByRole('button', { name: /Següent: Cap a l’escola bressol/ }).click();
+  await expect(page.locator('#chapter')).toContainText('LA PRIMERA MOTO');
+  expect(errors).toEqual([]);
+});
+
 test('plays all seven chapters with real input and reveals the final invitation', async ({ page }) => {
   test.setTimeout(300000);
   const errors: string[] = [];

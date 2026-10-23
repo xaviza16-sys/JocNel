@@ -7,6 +7,9 @@ import familyUrl from '../assets/adventure/family-nel-v2.webp';
 import babyUrl from '../assets/adventure/baby-nel-v1.webp';
 import babyHugUrl from '../assets/adventure/baby-nel-hug-v1.webp';
 import { babyFrameNames } from './baby-animation';
+import { toddlerFrameNames } from './toddler-animation';
+import toddlerUrl from '../assets/adventure/toddler-nel-v1.webp';
+import parkedMotoUrl from '../assets/adventure/toy-moto-parked-v1.webp';
 
 export const actorRows = ['baby', 'toddler', 'child', 'snow', 'explorer', 'skater'] as const;
 export const propFrames = ['bookshelf', 'cushions', 'tree', 'school', 'fir', 'cabin', 'boulder', 'bridge', 'ladder', 'lookout', 'ramp', 'bench', 'grass-tile', 'snow-tile', 'city-tile', 'party'];
@@ -18,6 +21,8 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('family', familyUrl);
   scene.load.image('baby-nel', babyUrl);
   scene.load.image('baby-hug', babyHugUrl);
+  scene.load.image('toddler-nel', toddlerUrl);
+  scene.load.image('toy-moto', parkedMotoUrl);
 }
 
 function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
@@ -60,6 +65,8 @@ export function createAdventureFrames(scene: Phaser.Scene) {
   register(scene, 'family', ['dog-awake', 'dog-rest'], 2, 1, [.63, 1]);
   register(scene, 'baby-nel', babyFrameNames, 4, 6, [0, .17, .33, .50, .67, .83, 1], [0, .269, .5, .75, 1], true);
   register(scene, 'baby-hug', ['hug'], 1, 1);
+  register(scene, 'toddler-nel', toddlerFrameNames, 4, 6, [0, .174, .342, .51, .678, .848, 1], undefined, true);
+  register(scene, 'toy-moto', ['parked'], 1, 1);
 }
 
 export function prop(scene: Phaser.Scene, frame: string, x: number, bottom: number, width: number, depth = 1) {

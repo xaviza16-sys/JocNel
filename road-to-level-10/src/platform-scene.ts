@@ -6,6 +6,7 @@ import { prop } from './adventure-art';
 import { adventureWorld, platformArt, forestTree } from './adventure-world';
 import { BabyPuzzle, canMantle } from './baby-puzzle';
 import { babyAnimationFrame } from './baby-animation';
+import { toddlerAnimationFrame } from './toddler-animation';
 import { zipPose, vinePose, nextSwingAngle } from './traversal';
 
 interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
@@ -51,6 +52,13 @@ export class PlatformLevel extends Phaser.Scene {
   private babyDistance = 0;
   private babyLastX = 0;
   private babyFacingLeft = false;
+  private toddlerDistance = 0;
+  private toddlerLastX = 0;
+  private toddlerFacingLeft = false;
+  private toddlerWasAirborne = false;
+  private toddlerAirSince = 0;
+  private toddlerLandedAt = -Infinity;
+  private discoveryTimer?: number;
   constructor(private hooks: Hooks) { super('PlatformLevel'); }
   init(data: { level: Level }) {
     this.level = data.level; this.finished = false; this.collected = 0; this.clock = 0; this.checkpoint = data.level.spawn;
@@ -61,6 +69,9 @@ export class PlatformLevel extends Phaser.Scene {
     this.zipped.clear(); this.swung.clear(); this.grabAfter = this.momentumUntil = this.lastPushSound = 0; this.mother = undefined;
     this.dogArt = undefined; this.dogMounted = this.dogCrossed = false;
     this.babyDistance = 0; this.babyLastX = data.level.spawn; this.babyFacingLeft = false;
+    this.toddlerDistance = 0; this.toddlerLastX = data.level.spawn; this.toddlerFacingLeft = this.toddlerWasAirborne = false;
+    this.toddlerAirSince = 0; this.toddlerLandedAt = -Infinity;
+    window.clearInterval(this.discoveryTimer); this.discoveryTimer = undefined;
   }
   create() {
     this.hooks.begin(this.level);
@@ -134,11 +145,14 @@ export class PlatformLevel extends Phaser.Scene {
     if (this.level.mode === 'baby') {
       this.mother = this.add.image(this.level.finish + 10, this.level.goalY, 'family', 'mother').setOrigin(.5, 1).setDepth(5);
       this.mother.setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
+    } else if (this.level.mode === 'toddler') {
+      const moto = this.add.image(this.level.finish + 15, this.level.goalY, 'toy-moto', 'parked').setOrigin(.5, 1).setDepth(5);
+      moto.setDisplaySize(60, 60 * moto.frame.height / moto.frame.width);
     } else {
       const goal = this.add.image(this.level.finish + 6, this.level.goalY, 'foods', this.level.mode === 'skate' ? 'cake' : 'bear').setOrigin(.5, 1).setDepth(4);
       goal.setDisplaySize(this.level.mode === 'skate' ? 31 : 25, this.level.mode === 'skate' ? 31 : 27);
     }
-    this.add.text(this.level.finish, this.level.goalY - (this.level.mode === 'baby' ? 91 : 45), this.level.mode === 'baby' ? 'LA MAMA! ♡' : this.level.mode === 'nature' ? 'EL MIRADOR ↑' : this.level.mode === 'skate' ? 'NIVELL 10' : 'ARRIBADA!', { fontFamily: 'monospace', fontSize: '8px', color: '#254a42', backgroundColor: '#fff0c8', padding: { x: 4, y: 3 } }).setOrigin(.5).setDepth(5);
+    this.add.text(this.level.finish, this.level.goalY - (this.level.mode === 'baby' ? 91 : this.level.mode === 'toddler' ? 65 : 45), this.level.mode === 'baby' ? 'LA MAMA! ♡' : this.level.mode === 'toddler' ? 'LA MOTO DE JOGUINA!' : this.level.mode === 'nature' ? 'EL MIRADOR ↑' : this.level.mode === 'skate' ? 'NIVELL 10' : 'ARRIBADA!', { fontFamily: 'monospace', fontSize: '8px', color: '#254a42', backgroundColor: '#fff0c8', padding: { x: 4, y: 3 } }).setOrigin(.5).setDepth(5);
     this.cameras.main.setBounds(0, 0, this.level.width, 270).startFollow(this.player, true, this.hooks.reducedMotion ? 1 : .15, 1, -72, 0);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#24483e', backgroundColor: '#fff0d1', padding: { x: 6, y: 5 } };
     this.hud = this.add.text(9, 9, '', style).setScrollFactor(0).setDepth(20);
@@ -148,6 +162,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.controls = new InputManager(this);
     const escape = this.input.keyboard!.addKey('ESC'); escape.on('down', this.hooks.pause);
     this.events.once('shutdown', () => escape.off('down', this.hooks.pause));
+    this.events.once('shutdown', () => { window.clearInterval(this.discoveryTimer); this.discoveryTimer = undefined; });
     this.events.on('resume', () => { this.controls.reset(); this.jumpBuffer.reset(); });
     this.updateHud();
   }
@@ -210,6 +225,19 @@ export class PlatformLevel extends Phaser.Scene {
         reducedMotion: this.hooks.reducedMotion });
       this.hero.setTexture('baby-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.babyFacingLeft);
       this.hero.setDisplaySize(50 * this.hero.frame.realWidth / this.hero.frame.realHeight, 50);
+    } else if (this.level.mode === 'toddler') {
+      const travelled = Math.abs(this.player.x - this.toddlerLastX);
+      if (travelled < 20) this.toddlerDistance += travelled;
+      this.toddlerLastX = this.player.x;
+      if (axis) this.toddlerFacingLeft = axis < 0;
+      if (airborne && !this.toddlerWasAirborne) this.toddlerAirSince = this.clock;
+      if (!airborne && this.toddlerWasAirborne) this.toddlerLandedAt = this.clock;
+      this.toddlerWasAirborne = airborne;
+      const pose = toddlerAnimationFrame({ distance: this.toddlerDistance, time: this.clock,
+        moving: travelled > .01, airborne, vy: body.velocity.y, airTime: this.clock - this.toddlerAirSince,
+        landingAge: this.clock - this.toddlerLandedAt, reducedMotion: this.hooks.reducedMotion });
+      this.hero.setTexture('toddler-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.toddlerFacingLeft);
+      this.hero.setDisplaySize(48 * this.hero.frame.realWidth / this.hero.frame.realHeight, 48);
     } else {
       const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
       this.hero.setTexture(special ? 'mechanics' : 'heroes', special || `${config.actor}-${frame}`).setPosition(this.player.x, body.bottom).setFlipX(axis < 0 && this.level.mode !== 'snow' && this.level.mode !== 'skate');
@@ -333,6 +361,26 @@ export class PlatformLevel extends Phaser.Scene {
       this.hero.setVisible(false); this.hint.setVisible(false); this.note.setText('AMB LA MAMA ♡');
       this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
     }
-    this.hooks.complete(this.level, this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
+    if (this.level.mode === 'toddler') {
+      this.hint.setVisible(false); this.note.setText('HAS TROBAT LA MOTO!');
+      const status = document.getElementById('status')!;
+      if (!status.textContent?.includes('MOTO TROBADA')) status.textContent += ' · MOTO TROBADA';
+      const showDiscovery = (frame: number) => {
+        this.hero.setTexture('toddler-nel', `discover-${frame}`).setPosition(this.level.finish - 25, this.level.goalY).setFlipX(false);
+        this.hero.setDisplaySize(48 * this.hero.frame.realWidth / this.hero.frame.realHeight, 48);
+      };
+      window.clearInterval(this.discoveryTimer);
+      showDiscovery(this.hooks.reducedMotion ? 3 : 0);
+      if (!this.hooks.reducedMotion) {
+        let frame = 0;
+        // The scene is paused for the discovery; render these poses while
+        // the browser timer runs, then hold the final happy pose.
+        this.discoveryTimer = window.setInterval(() => {
+          showDiscovery(++frame);
+          if (frame === 3) { window.clearInterval(this.discoveryTimer); this.discoveryTimer = undefined; }
+        }, 180);
+      }
+    }
+    this.hooks.complete(this.level, this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'toddler' ? 'Has trobat la teva moto de joguina, Nel! Ara que ja camines i saltes, toca pujar-hi i anar cap a l’escola bressol.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
   }
 }

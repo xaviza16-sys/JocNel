@@ -41,6 +41,7 @@ Els intents són il·limitats, les estrelles són opcionals i la invitació semp
 - `src/data/invitation.json`: nom d’en Nel, dia, hora, lloc i confirmació per WhatsApp. Les dades de la festa encara buides mostren «Per confirmar».
 - `assets/adventure/family-nel-v2.png` i `.webp`: mare i gos en pixel art, revisats a partir de la foto aportada. No es desa la fotografia original al repositori. Recursos i prompt a `docs/FAMILIA_NEL_V2.md`.
 - `assets/adventure/baby-nel-v1.png` i `.webp`: 24 poses d’en Nel nadó amb el vestuari de la foto. L’abraçada actualitzada és a `baby-nel-hug-v1.png` i `.webp`. Recursos i prompts a `docs/NEL_NADO_ANIMACIONS.md`.
+- `assets/adventure/toddler-nel-v1.png` i `.webp`: 24 poses del segon nivell amb la granota turquesa de la foto. `toy-moto-parked-v1.png` i `.webp` mostren la moto que troba al final, abans de començar la cursa. Recursos i prompts a `docs/NEL_PRIMERES_PASSES.md`.
 - `docs/FAMILIA_NEL_CA.md`: recursos nous i prompt utilitzat amb l’eina integrada d’imatges.
 - `docs/ADVENTURE_ART.md` i `docs/MECHANICS_UPDATE.md`: documentació tècnica i prompts de les versions anteriors.
 - `docs/CREDITS.md`: crèdits.

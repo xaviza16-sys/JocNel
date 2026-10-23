@@ -1,5 +1,7 @@
 # Crèdits
 
+- En Nel al segon nivell i la moto aparcada: nou full de 24 poses basat en la fotografia amb granota turquesa i nova vista de la moto a partir dels sprites existents. Generats amb l’eina integrada d’imatges. Fitxers i prompts a `docs/NEL_PRIMERES_PASSES.md`.
+
 - En Nel nadó: nou full de 24 poses i abraçada final generats amb l’eina integrada d’imatges a partir de la fotografia familiar del nadó amb roba clara i mànigues ratllades. Fitxers i prompts a `docs/NEL_NADO_ANIMACIONS.md`.
 
 - Motor: Phaser 3 (MIT). Eines: TypeScript, Vite, Vitest i Playwright.
