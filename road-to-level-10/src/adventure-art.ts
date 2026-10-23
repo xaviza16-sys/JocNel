@@ -4,6 +4,9 @@ import enemiesUrl from '../assets/adventure/enemies-v1.webp';
 import worldsUrl from '../assets/adventure/worlds-v1.webp';
 import mechanicsUrl from '../assets/adventure/mechanics-v1.webp';
 import familyUrl from '../assets/adventure/family-nel-v2.webp';
+import babyUrl from '../assets/adventure/baby-nel-v1.webp';
+import babyHugUrl from '../assets/adventure/baby-nel-hug-v1.webp';
+import { babyFrameNames } from './baby-animation';
 
 export const actorRows = ['baby', 'toddler', 'child', 'snow', 'explorer', 'skater'] as const;
 export const propFrames = ['bookshelf', 'cushions', 'tree', 'school', 'fir', 'cabin', 'boulder', 'bridge', 'ladder', 'lookout', 'ramp', 'bench', 'grass-tile', 'snow-tile', 'city-tile', 'party'];
@@ -13,15 +16,17 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('heroes', actorsUrl); scene.load.image('foods', enemiesUrl); scene.load.image('worlds', worldsUrl);
   scene.load.image('mechanics', mechanicsUrl);
   scene.load.image('family', familyUrl);
+  scene.load.image('baby-nel', babyUrl);
+  scene.load.image('baby-hug', babyHugUrl);
 }
 
-function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[]) {
+function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
   const texture = scene.textures.get(key), source = texture.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height;
   const context = canvas.getContext('2d', { willReadFrequently: true })!; context.drawImage(source, 0, 0);
   const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
   // Only transparent margins are trimmed. The supplied mockup is never sliced.
-  frames.forEach((name, i) => {
+  const bounds = frames.map((name, i) => {
     const col = i % columns, row = Math.floor(i / columns);
     const x0 = Math.round((columnEdges?.[col] ?? col / columns) * source.width);
     // The house foliage almost touches the tree in the source sheet.
@@ -34,7 +39,14 @@ function register(scene: Phaser.Scene, key: string, frames: string[], columns: n
       l = Math.min(l, x); r = Math.max(r, x); t = Math.min(t, y); b = Math.max(b, y);
     }
     if (l > r) throw new Error(`Sprite buit: ${key}/${name}`);
-    texture.add(name, 0, l, t, r - l + 1, b - t + 1);
+    return { name, x: l, y: t, width: r - l + 1, height: b - t + 1 };
+  });
+  const width = Math.max(...bounds.map(b => b.width)), height = Math.max(...bounds.map(b => b.height));
+  bounds.forEach(b => {
+    const frame = texture.add(b.name, 0, b.x, b.y, b.width, b.height)!;
+    // A shared untrimmed canvas preserves body scale and the floor baseline
+    // through low crawl poses and taller climbing poses.
+    if (aligned) frame.setTrim(width, height, Math.round((width - b.width) / 2), height - b.height, b.width, b.height);
   });
 }
 export function createAdventureFrames(scene: Phaser.Scene) {
@@ -46,6 +58,8 @@ export function createAdventureFrames(scene: Phaser.Scene) {
   // The seated mother takes the upper 63% of the generated source sheet.
   register(scene, 'family', ['mother', 'hug'], 2, 1, [0, .63]);
   register(scene, 'family', ['dog-awake', 'dog-rest'], 2, 1, [.63, 1]);
+  register(scene, 'baby-nel', babyFrameNames, 4, 6, [0, .17, .33, .50, .67, .83, 1], [0, .269, .5, .75, 1], true);
+  register(scene, 'baby-hug', ['hug'], 1, 1);
 }
 
 export function prop(scene: Phaser.Scene, frame: string, x: number, bottom: number, width: number, depth = 1) {

@@ -1,7 +1,7 @@
 // Format-only delivery optimization. Original generated PNGs remain untouched.
 import { chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
-const files = ['assets/race/rider-rear-v1.png', 'assets/race/autumn-street-v2.png', 'assets/adventure/evolution-v2.png', 'assets/adventure/enemies-v1.png', 'assets/adventure/worlds-v1.png', 'assets/adventure/mechanics-v1.png', 'assets/adventure/family-nel-v1.png', 'assets/adventure/family-nel-v2.png'];
+const files = ['assets/race/rider-rear-v1.png', 'assets/race/autumn-street-v2.png', 'assets/adventure/evolution-v2.png', 'assets/adventure/enemies-v1.png', 'assets/adventure/worlds-v1.png', 'assets/adventure/mechanics-v1.png', 'assets/adventure/family-nel-v1.png', 'assets/adventure/family-nel-v2.png', 'assets/adventure/baby-nel-v1.png', 'assets/adventure/baby-nel-hug-v1.png'];
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();

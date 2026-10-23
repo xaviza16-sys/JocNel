@@ -5,6 +5,7 @@ import { movement, enemyIntent, JumpBuffer, type PlatformMode, type EnemyKind } 
 import { prop } from './adventure-art';
 import { adventureWorld, platformArt, forestTree } from './adventure-world';
 import { BabyPuzzle, canMantle } from './baby-puzzle';
+import { babyAnimationFrame } from './baby-animation';
 import { zipPose, vinePose, nextSwingAngle } from './traversal';
 
 interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
@@ -47,6 +48,9 @@ export class PlatformLevel extends Phaser.Scene {
   private dogArt?: Phaser.GameObjects.Image;
   private dogMounted = false;
   private dogCrossed = false;
+  private babyDistance = 0;
+  private babyLastX = 0;
+  private babyFacingLeft = false;
   constructor(private hooks: Hooks) { super('PlatformLevel'); }
   init(data: { level: Level }) {
     this.level = data.level; this.finished = false; this.collected = 0; this.clock = 0; this.checkpoint = data.level.spawn;
@@ -56,6 +60,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.blocks = []; this.mantle = undefined; this.mantles = 0; this.zip = this.vine = undefined;
     this.zipped.clear(); this.swung.clear(); this.grabAfter = this.momentumUntil = this.lastPushSound = 0; this.mother = undefined;
     this.dogArt = undefined; this.dogMounted = this.dogCrossed = false;
+    this.babyDistance = 0; this.babyLastX = data.level.spawn; this.babyFacingLeft = false;
   }
   create() {
     this.hooks.begin(this.level);
@@ -193,10 +198,23 @@ export class PlatformLevel extends Phaser.Scene {
     if (this.level.mode === 'nature' && airborne && !this.climbing) frame = 2;
     if (this.level.mode === 'nature' && !airborne && !this.climbing) frame = axis ? 1 : 0;
     if (this.level.mode === 'skate' && !airborne) frame = this.clock < this.bonusUntil ? 3 : axis > 0 ? 1 : 0;
-    const special = this.mantle ? 'baby-climb' : this.level.mode === 'baby' && this.controls.actionHeld() && axis ? 'baby-push' : this.zip ? 'zip' : this.vine ? 'vine' : undefined;
-    this.hero.setTexture(special ? 'mechanics' : 'heroes', special || `${config.actor}-${this.level.mode === 'baby' && airborne ? 1 : frame}`).setPosition(this.player.x, body.bottom).setFlipX(axis < 0 && this.level.mode !== 'snow' && this.level.mode !== 'skate');
-    const targetHeight = this.level.mode === 'baby' && airborne ? 38 : config.height;
-    this.hero.setDisplaySize(targetHeight * this.hero.frame.width / this.hero.frame.height, targetHeight);
+    if (this.level.mode === 'baby') {
+      const travelled = Math.abs(this.player.x - this.babyLastX);
+      if (!this.mantle && travelled < 20) this.babyDistance += travelled;
+      this.babyLastX = this.player.x;
+      if (axis) this.babyFacingLeft = axis < 0;
+      const pose = babyAnimationFrame({ distance: this.babyDistance, time: this.clock,
+        moving: travelled > .01 && !airborne,
+        pushing: !!axis && this.controls.actionHeld() && !airborne,
+        climbProgress: this.mantle ? this.mantle.elapsed / .46 : undefined,
+        reducedMotion: this.hooks.reducedMotion });
+      this.hero.setTexture('baby-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.babyFacingLeft);
+      this.hero.setDisplaySize(50 * this.hero.frame.realWidth / this.hero.frame.realHeight, 50);
+    } else {
+      const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
+      this.hero.setTexture(special ? 'mechanics' : 'heroes', special || `${config.actor}-${frame}`).setPosition(this.player.x, body.bottom).setFlipX(axis < 0 && this.level.mode !== 'snow' && this.level.mode !== 'skate');
+      this.hero.setDisplaySize(config.height * this.hero.frame.width / this.hero.frame.height, config.height);
+    }
     this.hero.setTint(this.clock < this.protectedUntil ? 0xd4ebf4 : 0xffffff);
     if (this.level.dog && this.dogArt) {
       const dog = this.level.dog, top = 230 - dog.height, right = dog.x + dog.width / 2;
@@ -311,7 +329,7 @@ export class PlatformLevel extends Phaser.Scene {
   }
   complete() {
     this.finished = true; this.player.setVelocity(0, 0); this.scene.pause();
-    if (this.mother) { this.hero.setVisible(false); this.mother.setFrame('hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74); }
+    if (this.mother) { this.hero.setVisible(false); this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74); }
     this.hooks.complete(this.level, this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
   }
 }

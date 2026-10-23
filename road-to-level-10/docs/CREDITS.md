@@ -1,5 +1,7 @@
 # Crèdits
 
+- En Nel nadó: nou full de 24 poses i abraçada final generats amb l’eina integrada d’imatges a partir de la fotografia familiar del nadó amb roba clara i mànigues ratllades. Fitxers i prompts a `docs/NEL_NADO_ANIMACIONS.md`.
+
 - Motor: Phaser 3 (MIT). Eines: TypeScript, Vite, Vitest i Playwright.
 - Sprites inicials: recursos provisionals inclosos al projecte, conservats sense modificar.
 - Escenaris: geometria original dibuixada amb Phaser i fulls il·lustrats generats amb l’eina integrada d’imatges. Tipografia: fonts del sistema.

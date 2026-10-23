@@ -40,6 +40,7 @@ Els intents són il·limitats, les estrelles són opcionals i la invitació semp
 - `src/data/levels.json`: recorreguts, obstacles i textos en català.
 - `src/data/invitation.json`: nom d’en Nel, dia, hora, lloc i confirmació per WhatsApp. Les dades de la festa encara buides mostren «Per confirmar».
 - `assets/adventure/family-nel-v2.png` i `.webp`: mare i gos en pixel art, revisats a partir de la foto aportada. No es desa la fotografia original al repositori. Recursos i prompt a `docs/FAMILIA_NEL_V2.md`.
+- `assets/adventure/baby-nel-v1.png` i `.webp`: 24 poses d’en Nel nadó amb el vestuari de la foto. L’abraçada actualitzada és a `baby-nel-hug-v1.png` i `.webp`. Recursos i prompts a `docs/NEL_NADO_ANIMACIONS.md`.
 - `docs/FAMILIA_NEL_CA.md`: recursos nous i prompt utilitzat amb l’eina integrada d’imatges.
 - `docs/ADVENTURE_ART.md` i `docs/MECHANICS_UPDATE.md`: documentació tècnica i prompts de les versions anteriors.
 - `docs/CREDITS.md`: crèdits.
@@ -61,4 +62,4 @@ Les proves cobreixen la configuració, els enemics, els salts, les escales de bl
 
 ## Publicació
 
-`npm run build` genera `dist/`. La variable `VITE_BASE_PATH=/nom-del-repositori/` configura la ruta base. El flux de GitHub Actions verifica el joc abans de publicar-lo a GitHub Pages quan es configuri el repositori. No s’ha publicat cap canvi durant aquesta feina local.
+El joc està disponible a https://xaviza16-sys.github.io/JocNel/ amb GitHub Pages. Cada pujada a `main` executa les comprovacions i publica la versió nova si passen. `npm run build` genera `dist/`; el flux configura automàticament `VITE_BASE_PATH=/JocNel/`.
