@@ -329,7 +329,10 @@ export class PlatformLevel extends Phaser.Scene {
   }
   complete() {
     this.finished = true; this.player.setVelocity(0, 0); this.scene.pause();
-    if (this.mother) { this.hero.setVisible(false); this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74); }
+    if (this.mother) {
+      this.hero.setVisible(false); this.hint.setVisible(false); this.note.setText('AMB LA MAMA ♡');
+      this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
+    }
     this.hooks.complete(this.level, this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
   }
 }

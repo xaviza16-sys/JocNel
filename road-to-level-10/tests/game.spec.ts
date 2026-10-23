@@ -20,6 +20,11 @@ async function playBaby(page: Page) {
   await page.keyboard.down('Space'); await page.keyboard.down('ArrowRight');
   await expect(page.locator('#status')).toContainText('ESCALA 2 A PUNT', { timeout: 16000 });
   await page.keyboard.up('Space'); await page.keyboard.down('w');
+  await expect(page.locator('#status')).toContainText('100%', { timeout: 9000 });
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await page.waitForTimeout(1000);
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await page.screenshot({ path: 'test-results/baby-hug-before-result.png', fullPage: true });
   await expect(page.getByRole('button', { name: /Següent:/ })).toBeVisible({ timeout: 9000 });
   await page.keyboard.up('w'); await page.keyboard.up('ArrowRight');
 }

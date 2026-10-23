@@ -13,6 +13,7 @@ import './style.css';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const overlay = $('overlay');
+let completionTimer: number | undefined;
 let storage: Storage | undefined;
 try { storage = window.localStorage; } catch { /* Storage can be unavailable. */ }
 const saves = new SaveManager(storage);
@@ -28,6 +29,7 @@ function button(label: string, action: () => void, secondary = false) {
   node.textContent = label; node.onclick = () => { audio.unlock(); action(); }; return node;
 }
 function panel(eyebrow: string, title: string, copy: string, compact = false) {
+  window.clearTimeout(completionTimer); completionTimer = undefined;
   overlay.replaceChildren();
   const root = document.createElement('div'); root.className = `panel${compact ? ' compact' : ''}`;
   const kicker = document.createElement('span'); kicker.className = 'eyebrow'; kicker.textContent = eyebrow;
@@ -124,8 +126,17 @@ function finishLevel(level: Level, copy: string) {
   const next = nextLevel(level.id);
   const heading = next ? level.id === 'baby' ? 'La teva primera aventura!' : 'Un pas més!' : 'Has arribat al nivell 10, Nel!';
   if (!next) { celebrate(); audio.playTheme('party'); }
-  const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, copy, true);
-  actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
+  const showResult = () => {
+    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, copy, true);
+    actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
+  };
+  window.clearTimeout(completionTimer); completionTimer = undefined;
+  if (level.mode === 'baby') {
+    // The gameplay scene is paused, so use a window timer to leave the hug
+    // unobscured before the results panel appears. Other panels cancel it.
+    overlay.replaceChildren();
+    completionTimer = window.setTimeout(showResult, 2500);
+  } else showResult();
 }
 function celebrate() {
   const shell = document.querySelector('.game-shell')!;
