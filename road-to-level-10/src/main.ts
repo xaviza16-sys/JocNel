@@ -1,0 +1,227 @@
+import Phaser from 'phaser';
+import atlas from '../assets/sprites/atlas.json';
+import invitation from './data/invitation.json';
+import { levels, nextLevel, SaveManager, whatsAppUrl, type Level } from './model';
+import { AudioManager } from './systems';
+import { drawWorld } from './scenery';
+import { MotoRace } from './race-scene';
+import { loadRaceArt, createRaceFrames } from './race-art';
+import { loadAdventureArt, createAdventureFrames } from './adventure-art';
+import { PlatformLevel } from './platform-scene';
+import { Snowboard } from './snowboard-scene';
+import './style.css';
+
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+const overlay = $('overlay');
+let storage: Storage | undefined;
+try { storage = window.localStorage; } catch { /* Storage can be unavailable. */ }
+const saves = new SaveManager(storage);
+const progress = saves.read();
+const audio = new AudioManager(); audio.muted = progress.muted;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const spriteUrls = import.meta.glob('../assets/sprites/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+let activeLevel = levels[0];
+let game: Phaser.Game;
+
+function button(label: string, action: () => void, secondary = false) {
+  const node = document.createElement('button'); node.className = secondary ? 'secondary' : 'primary';
+  node.textContent = label; node.onclick = () => { audio.unlock(); action(); }; return node;
+}
+function panel(eyebrow: string, title: string, copy: string, compact = false) {
+  overlay.replaceChildren();
+  const root = document.createElement('div'); root.className = `panel${compact ? ' compact' : ''}`;
+  const kicker = document.createElement('span'); kicker.className = 'eyebrow'; kicker.textContent = eyebrow;
+  const heading = document.createElement('h2'); heading.textContent = title;
+  const text = document.createElement('p'); text.textContent = copy;
+  const actions = document.createElement('div'); actions.className = 'actions';
+  root.append(kicker, heading, text, actions); overlay.append(root);
+  requestAnimationFrame(() => root.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }));
+  return { root, actions };
+}
+function playingUI(playing: boolean) {
+  $('pause').hidden = !playing; $('touch-controls').hidden = !playing;
+  document.querySelector<HTMLButtonElement>('[data-action="jump"]')!.hidden = activeLevel.mode === 'moto';
+  const action = document.querySelector<HTMLButtonElement>('[data-action="jump"]')!;
+  action.textContent = activeLevel.mode === 'baby' ? 'EMPÈNYER ▷' : activeLevel.mode === 'nature' ? 'SALTAR / DEIXAR-SE ANAR' : 'SALTAR ↑';
+  action.setAttribute('aria-label', activeLevel.mode === 'baby' ? 'Empènyer' : 'Saltar');
+  document.querySelector<HTMLButtonElement>('[data-action="climb"]')!.hidden = !['nature', 'baby'].includes(activeLevel.mode);
+}
+function gameplayKey() { return activeLevel.mode === 'moto' ? 'MotoRace' : activeLevel.mode === 'snow' ? 'Snowboard' : 'PlatformLevel'; }
+function gameplay() { return game.scene.getScene(gameplayKey()) as PlatformLevel | MotoRace | Snowboard; }
+function startLevel(level: Level) {
+  activeLevel = level;
+  for (const key of ['Menu', 'LevelSelect', 'Pause', 'Invitation', 'PlatformLevel', 'MotoRace', 'Snowboard']) game.scene.stop(key);
+  audio.playTheme(level.mode);
+  game.scene.start(gameplayKey(), { level });
+}
+function returnMenu() {
+  for (const key of ['PlatformLevel', 'MotoRace', 'Snowboard', 'Pause', 'Invitation', 'LevelSelect']) game.scene.stop(key);
+  game.scene.start('Menu');
+}
+
+class Boot extends Phaser.Scene {
+  constructor() { super('Boot'); }
+  create() { this.scene.start('Preload'); }
+}
+class Preload extends Phaser.Scene {
+  constructor() { super('Preload'); }
+  preload() {
+    const label = this.add.text(240, 135, 'Preparant records…', { fontFamily: 'monospace', fontSize: '12px', color: '#234d45' }).setOrigin(.5);
+    this.load.on('progress', (value: number) => label.setText(`Preparant records… ${Math.round(value * 100)}%`));
+    this.load.on('loaderror', () => { $('status').textContent = 'No s’ha pogut carregar un recurs. Torna a carregar la pàgina per provar-ho de nou.'; });
+    for (const [key, info] of Object.entries(atlas)) {
+      this.load.spritesheet(key, spriteUrls[`../${info.image}`], { frameWidth: info.frameWidth, frameHeight: info.frameHeight });
+    }
+    loadRaceArt(this);
+    loadAdventureArt(this);
+  }
+  create() {
+    createRaceFrames(this);
+    createAdventureFrames(this);
+    for (const [key, info] of Object.entries(atlas)) for (const [name, anim] of Object.entries(info.animations)) {
+      this.anims.create({ key: `${key}-${name}`, frames: this.anims.generateFrameNumbers(key, { start: anim.start, end: anim.end }), frameRate: reducedMotion ? 1 : anim.frameRate, repeat: anim.repeat });
+    }
+    const g = this.make.graphics({ x: 0, y: 0 });
+    g.fillStyle(0xffd36d); g.fillPoints([new Phaser.Geom.Point(6, 0), new Phaser.Geom.Point(8, 4), new Phaser.Geom.Point(12, 5), new Phaser.Geom.Point(9, 8), new Phaser.Geom.Point(10, 12), new Phaser.Geom.Point(6, 10), new Phaser.Geom.Point(2, 12), new Phaser.Geom.Point(3, 8), new Phaser.Geom.Point(0, 5), new Phaser.Geom.Point(4, 4)], true);
+    g.generateTexture('star', 12, 12); g.destroy(); this.scene.start('Menu');
+  }
+}
+class Menu extends Phaser.Scene {
+  constructor() { super('Menu'); }
+  create() {
+    playingUI(false); $('chapter').textContent = 'L’INICI DE L’AVENTURA D’EN NEL';
+    audio.playTheme('menu');
+    $('status').textContent = '✦ Al teu ritme, amb intents il·limitats'; drawWorld(this, 'moto', 960);
+    const hero = this.add.image(380, 238, 'heroes', 'skater-0').setOrigin(.5, 1);
+    hero.setDisplaySize(85 * hero.frame.width / hero.frame.height, 85);
+    const { root, actions } = panel('PREM COMENÇAR I TORNA AL PRINCIPI', 'L’aventura d’en Nel', 'Acompanya en Nel: de gatejar per casa a descobrir el món. Recull records i descobreix la seva festa.');
+    const resume = levels.find(l => !progress.completed.includes(l.id)) || levels[0];
+    actions.append(button(progress.completed.length ? 'Continuar l’aventura →' : 'Començar l’aventura! →', () => startLevel(resume)), button('Triar capítol', () => this.scene.start('LevelSelect'), true));
+    const small = document.createElement('small'); small.textContent = '7 capítols · Dels primers descobriments al nivell 10'; root.append(small);
+  }
+}
+class LevelSelect extends Phaser.Scene {
+  constructor() { super('LevelSelect'); }
+  create() {
+    playingUI(false);
+    const { root, actions } = panel('L’ÀLBUM DE RECORDS', 'Cada pas compta', 'Set etapes per créixer jugant. Pots triar qualsevol record.', true);
+    const list = document.createElement('div'); list.className = 'level-list';
+    levels.forEach((level, index) => {
+      const card = button('', () => startLevel(level)); card.className = 'level-card';
+      const age = document.createElement('span'); age.textContent = `${String(index + 1).padStart(2, '0')} / ${level.subtitle}`;
+      const title = document.createElement('strong'); title.textContent = level.title;
+      const state = document.createElement('span'); state.textContent = progress.completed.includes(level.id) ? '✦ Record completat · Tornar-hi →' : 'Descobrir el record →';
+      card.append(age, title, state); list.append(card);
+    });
+    root.insertBefore(list, actions); actions.append(button('Tornar a l’inici', returnMenu, true));
+  }
+}
+
+
+function finishLevel(level: Level, copy: string) {
+  if (!progress.completed.includes(level.id)) progress.completed.push(level.id);
+  saves.write(progress); audio.sfx('complete'); playingUI(false);
+  const next = nextLevel(level.id);
+  const heading = next ? level.id === 'baby' ? 'La teva primera aventura!' : 'Un pas més!' : 'Has arribat al nivell 10, Nel!';
+  if (!next) { celebrate(); audio.playTheme('party'); }
+  const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, copy, true);
+  actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
+}
+function celebrate() {
+  const shell = document.querySelector('.game-shell')!;
+  shell.querySelector('.confetti')?.remove();
+  if (reducedMotion) return;
+  const confetti = document.createElement('div'); confetti.className = 'confetti'; confetti.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 45; i++) {
+    const piece = document.createElement('i'); piece.style.left = `${i * 37 % 100}%`; piece.style.animationDelay = `${i % 7 * .15}s`; piece.style.background = ['#e9b74b', '#8cb7a0', '#da815a', '#7aa9ce'][i % 4]; confetti.append(piece);
+  }
+  shell.append(confetti); window.setTimeout(() => confetti.remove(), 4800);
+}
+function pauseGame() {
+  if (!game.scene.isActive(gameplayKey())) return;
+  const scene = gameplay();
+  audio.setPaused(true);
+  scene.controls.reset(); scene.scene.pause(); game.scene.start('Pause');
+}
+function resumeGame() {
+  game.scene.stop('Pause'); overlay.replaceChildren(); playingUI(true); audio.playTheme(activeLevel.mode); game.scene.resume(gameplayKey());
+}
+class Pause extends Phaser.Scene {
+  constructor() { super('Pause'); }
+  create() {
+    playingUI(false);
+    audio.setPaused(true);
+    const { root, actions } = panel('UN PETIT DESCANS', 'Al teu ritme', 'La teva aventura t’espera just on l’has deixada.', true);
+    actions.append(button('Continuar jugant →', resumeGame), button('Tornar a l’inici', returnMenu, true));
+    const restart = button(activeLevel.mode === 'baby' ? 'Recol·locar els blocs i tornar a començar' : 'Reiniciar el capítol', () => startLevel(activeLevel), true);
+    restart.className = 'link-button'; root.append(restart);
+    const skip = button('Ometre aquest capítol →', () => {
+      const next = nextLevel(activeLevel.id); next ? startLevel(next) : showInvitation();
+    }, true); skip.className = 'link-button'; root.append(skip);
+  }
+}
+let invitationReturn: 'menu' | 'pause' | 'complete' = 'menu';
+function showInvitation() {
+  if (game.scene.isActive('Invitation')) return;
+  if (game.scene.isActive(gameplayKey())) pauseGame();
+  const platform = gameplay();
+  invitationReturn = game.scene.isActive('Pause') ? 'pause' : platform.finished && game.scene.isPaused(gameplayKey()) ? 'complete' : 'menu';
+  game.scene.stop('Pause'); game.scene.start('Invitation');
+}
+class Invitation extends Phaser.Scene {
+  constructor() { super('Invitation'); }
+  create() {
+    playingUI(false);
+    audio.playTheme('party');
+    const { root, actions } = panel('LA PROPERA GRAN AVENTURA ÉS JUNTS', invitation.childDisplayName ? `En ${invitation.childDisplayName} arriba al nivell 10!` : 'Ens espera una gran festa!', 'Deu anys de records es mereixen una altra aventura. I la volem viure amb tu.', true);
+    const details = document.createElement('dl'); details.className = 'invitation-details';
+    for (const [label, value] of [['DIA', invitation.date], ['HORA', invitation.time], ['LLOC', invitation.venue]]) {
+      const group = document.createElement('div'); const dt = document.createElement('dt'); dt.textContent = label;
+      const dd = document.createElement('dd'); dd.textContent = value || 'Per confirmar'; group.append(dt, dd); details.append(group);
+    }
+    root.insertBefore(details, actions);
+    const url = whatsAppUrl(invitation.rsvpWhatsApp);
+    if (url) {
+      const link = document.createElement('a'); link.className = 'primary'; link.textContent = 'Confirmar per WhatsApp ↗'; link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; actions.append(link);
+    } else {
+      const notice = document.createElement('small'); notice.textContent = 'Aviat hi trobaràs tots els detalls i la confirmació.'; root.append(notice);
+    }
+    actions.append(button(invitationReturn === 'menu' ? 'Tornar a l’inici' : 'Tornar al joc', () => {
+      this.scene.stop();
+      if (invitationReturn === 'pause') this.scene.launch('Pause');
+      else if (invitationReturn === 'complete') gameplay().complete();
+      else returnMenu();
+    }, true));
+  }
+}
+
+game = new Phaser.Game({
+  type: Phaser.AUTO, parent: 'game', width: 480, height: 270, backgroundColor: '#bed2b5', pixelArt: true,
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 650 }, debug: false } },
+  input: { activePointers: 4, keyboard: { capture: [32, 37, 38, 39, 40] } },
+  audio: { noAudio: true }, scene: [Boot, Preload, Menu, LevelSelect, new PlatformLevel({
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
+  }), new Snowboard({
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
+  }), new MotoRace({
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    begin: level => {
+      overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint;
+    },
+  }), Invitation, Pause],
+});
+$('pause').onclick = pauseGame;
+$('invite-shortcut').onclick = showInvitation;
+function updateSound() {
+  $('sound').textContent = `So: ${audio.muted ? 'no' : 'sí'}`;
+  $('sound').setAttribute('aria-pressed', String(!audio.muted)); $('sound').setAttribute('aria-label', audio.muted ? 'Activar el so' : 'Silenciar el so');
+}
+$('sound').onclick = () => { audio.unlock(); audio.muted = !audio.muted; progress.muted = audio.muted; saves.write(progress); updateSound(); audio.chime(); };
+updateSound();
+window.addEventListener('blur', () => { audio.setPaused(true); pauseGame(); });
+window.addEventListener('focus', () => { if (!game.scene.isActive('Pause') && !document.hidden) audio.setPaused(false); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { audio.setPaused(true); pauseGame(); } });
+window.addEventListener('pagehide', () => audio.setPaused(true));

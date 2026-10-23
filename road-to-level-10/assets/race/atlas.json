@@ -1,0 +1,8 @@
+{
+  "rider": { "columns": 4, "rows": 2, "frames": ["ride-0", "ride-1", "ride-2", "ride-3", "left", "right", "collect", "bump"] },
+  "street": {
+    "columns": [0, 0.263, 0.507, 0.748, 1],
+    "rows": [0, 0.307, 0.558, 0.775, 1],
+    "frames": ["tree-gold", "tree-green", "house-cream", "house-brick", "car-blue", "car-white", "lamp", "crossing", "hedge", "planter", "cone", "puddle", "blocks", "star", "coin", "memory"]
+  }
+}

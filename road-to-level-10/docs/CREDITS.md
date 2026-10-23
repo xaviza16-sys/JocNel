@@ -1,0 +1,12 @@
+# Crèdits
+
+- Motor: Phaser 3 (MIT). Eines: TypeScript, Vite, Vitest i Playwright.
+- Sprites inicials: recursos provisionals inclosos al projecte, conservats sense modificar.
+- Escenaris: geometria original dibuixada amb Phaser i fulls il·lustrats generats amb l’eina integrada d’imatges. Tipografia: fonts del sistema.
+- Moto amb vista posterior i carrer de tardor: nous fulls generats prenent el mockup com a referència visual. Fitxers i prompts a `docs/ART_GENERATION.md`.
+- Protagonista per edats, enemics i escenaris: fulls generats a partir del mockup, amb originals PNG i còpies WebP per al joc. Detalls a `docs/ADVENTURE_ART.md`.
+- Surf de neu i poses d’interacció: full generat amb l’eina integrada d’imatges. Fitxers i prompt a `docs/MECHANICS_UPDATE.md`.
+- Mare i gos d’en Nel: nou pixel art personalitzat a partir de la fotografia aportada per l’usuari. Substitueix la mare genèrica al primer capítol. La fotografia original no s’ha copiat al repositori. Fitxers, poses i prompt a `docs/FAMILIA_NEL_CA.md`.
+- Música i so: composicions chiptune originals per capítol i efectes sintetitzats localment amb Web Audio, amb melodia, baix i percussió. S’activen amb el botó de so; la preferència es desa al dispositiu.
+
+El joc no incorpora analítica ni serveis externs durant la partida. Les il·lustracions familiars són interpretacions pixelades de la referència facilitada.

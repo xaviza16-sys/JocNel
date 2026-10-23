@@ -1,0 +1,786 @@
+[
+  {
+    "id": "baby",
+    "title": "On és la mama?",
+    "subtitle": "0–1 anys · En Nel busca la mama",
+    "mode": "baby",
+    "ageMin": 0,
+    "width": 1400,
+    "spawn": 64,
+    "finish": 1250,
+    "goalY": 140,
+    "hint": "← → Gateja · ↑ Grimpa · ESPAI + direcció empeny els blocs. Passa per damunt del gos i arriba a la mama.",
+    "stars": [
+      {
+        "x": 235,
+        "y": 182
+      },
+      {
+        "x": 500,
+        "y": 176
+      },
+      {
+        "x": 580,
+        "y": 144
+      },
+      {
+        "x": 1060,
+        "y": 174
+      },
+      {
+        "x": 1120,
+        "y": 116
+      }
+    ],
+    "checkpoints": [
+      310,
+      700
+    ],
+    "platforms": [
+      {
+        "x": 230,
+        "y": 206,
+        "width": 88,
+        "height": 24
+      },
+      {
+        "x": 580,
+        "y": 170,
+        "width": 120,
+        "height": 60
+      },
+      {
+        "x": 1210,
+        "y": 140,
+        "width": 200,
+        "height": 90
+      }
+    ],
+    "enemies": [],
+    "ladders": [],
+    "blocks": [
+      {
+        "id": "step-one",
+        "x": 420,
+        "width": 40,
+        "height": 30,
+        "minX": 350,
+        "targetX": 500
+      },
+      {
+        "id": "step-small",
+        "x": 850,
+        "width": 40,
+        "height": 30,
+        "minX": 760,
+        "targetX": 1050
+      },
+      {
+        "id": "step-tall",
+        "x": 900,
+        "width": 40,
+        "height": 60,
+        "minX": 840,
+        "targetX": 1090
+      }
+    ],
+    "dog": {
+      "x": 730,
+      "width": 80,
+      "height": 26
+    }
+  },
+  {
+    "id": "toddler",
+    "title": "Les primeres passes",
+    "subtitle": "1–2 anys · Casa i jardí",
+    "mode": "toddler",
+    "ageMin": 1,
+    "width": 1500,
+    "spawn": 64,
+    "finish": 1390,
+    "goalY": 172,
+    "hint": "← → Camina · ESPAI Salta. Descobreix les plataformes del jardí.",
+    "stars": [
+      {
+        "x": 195,
+        "y": 170
+      },
+      {
+        "x": 430,
+        "y": 145
+      },
+      {
+        "x": 660,
+        "y": 196
+      },
+      {
+        "x": 840,
+        "y": 155
+      },
+      {
+        "x": 1130,
+        "y": 150
+      },
+      {
+        "x": 1370,
+        "y": 140
+      }
+    ],
+    "checkpoints": [
+      520,
+      1000
+    ],
+    "platforms": [
+      {
+        "x": 210,
+        "y": 202,
+        "width": 100,
+        "height": 28
+      },
+      {
+        "x": 430,
+        "y": 176,
+        "width": 110,
+        "height": 12
+      },
+      {
+        "x": 800,
+        "y": 190,
+        "width": 110,
+        "height": 40
+      },
+      {
+        "x": 875,
+        "y": 160,
+        "width": 80,
+        "height": 12
+      },
+      {
+        "x": 1160,
+        "y": 199,
+        "width": 90,
+        "height": 31
+      },
+      {
+        "x": 1250,
+        "y": 172,
+        "width": 100,
+        "height": 58
+      },
+      {
+        "x": 1380,
+        "y": 172,
+        "width": 120,
+        "height": 58
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "ball",
+        "x": 620,
+        "range": 55
+      }
+    ],
+    "ladders": []
+  },
+  {
+    "id": "moto",
+    "title": "Cap a l’escola bressol!",
+    "subtitle": "2–4 anys · La primera moto",
+    "mode": "moto",
+    "width": 1920,
+    "spawn": 64,
+    "finish": 1830,
+    "hint": "Avances automàticament. Condueix amb ← → o A / D: esquiva obstacles i recull escut, imant i turbo.",
+    "stars": [],
+    "checkpoints": [],
+    "platforms": [],
+    "race": {
+      "length": 780,
+      "speed": 28,
+      "events": [
+        {
+          "distance": 28,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 40,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 55,
+          "lane": 0,
+          "kind": "shield"
+        },
+        {
+          "distance": 65,
+          "lane": 1,
+          "kind": "coin"
+        },
+        {
+          "distance": 85,
+          "lane": -1,
+          "kind": "cone"
+        },
+        {
+          "distance": 110,
+          "lane": 0,
+          "kind": "cone"
+        },
+        {
+          "distance": 125,
+          "lane": 0,
+          "kind": "memory"
+        },
+        {
+          "distance": 130,
+          "lane": 1,
+          "kind": "star"
+        },
+        {
+          "distance": 150,
+          "lane": 1,
+          "kind": "magnet"
+        },
+        {
+          "distance": 180,
+          "lane": 0,
+          "kind": "puddle"
+        },
+        {
+          "distance": 200,
+          "lane": -1,
+          "kind": "star"
+        },
+        {
+          "distance": 215,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 220,
+          "lane": 1,
+          "kind": "coin"
+        },
+        {
+          "distance": 230,
+          "lane": 1,
+          "kind": "star"
+        },
+        {
+          "distance": 260,
+          "lane": 1,
+          "kind": "blocks"
+        },
+        {
+          "distance": 280,
+          "lane": -1,
+          "kind": "boost"
+        },
+        {
+          "distance": 310,
+          "lane": 0,
+          "kind": "cone"
+        },
+        {
+          "distance": 340,
+          "lane": -1,
+          "kind": "star"
+        },
+        {
+          "distance": 355,
+          "lane": -1,
+          "kind": "star"
+        },
+        {
+          "distance": 380,
+          "lane": -1,
+          "kind": "puddle"
+        },
+        {
+          "distance": 390,
+          "lane": 1,
+          "kind": "memory"
+        },
+        {
+          "distance": 410,
+          "lane": 0,
+          "kind": "shield"
+        },
+        {
+          "distance": 445,
+          "lane": 1,
+          "kind": "cone"
+        },
+        {
+          "distance": 470,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 490,
+          "lane": 1,
+          "kind": "boost"
+        },
+        {
+          "distance": 525,
+          "lane": 0,
+          "kind": "blocks"
+        },
+        {
+          "distance": 550,
+          "lane": -1,
+          "kind": "magnet"
+        },
+        {
+          "distance": 580,
+          "lane": 1,
+          "kind": "star"
+        },
+        {
+          "distance": 600,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 610,
+          "lane": -1,
+          "kind": "coin"
+        },
+        {
+          "distance": 620,
+          "lane": -1,
+          "kind": "star"
+        },
+        {
+          "distance": 650,
+          "lane": -1,
+          "kind": "cone"
+        },
+        {
+          "distance": 650,
+          "lane": 0,
+          "kind": "puddle"
+        },
+        {
+          "distance": 680,
+          "lane": 1,
+          "kind": "star"
+        },
+        {
+          "distance": 700,
+          "lane": 0,
+          "kind": "star"
+        },
+        {
+          "distance": 720,
+          "lane": -1,
+          "kind": "star"
+        },
+        {
+          "distance": 730,
+          "lane": -1,
+          "kind": "memory"
+        },
+        {
+          "distance": 745,
+          "lane": 0,
+          "kind": "star"
+        }
+      ]
+    },
+    "ageMin": 2,
+    "goalY": 230,
+    "enemies": [],
+    "ladders": []
+  },
+  {
+    "id": "school",
+    "title": "Un pati ple de sorpreses",
+    "subtitle": "4–6 anys · Escola i amics",
+    "mode": "school",
+    "ageMin": 4,
+    "width": 1800,
+    "spawn": 64,
+    "finish": 1680,
+    "goalY": 180,
+    "hint": "ESPAI Salta per esquivar el Iogurt Mutant i el Tomàquet Furiós. No cal atacar-los!",
+    "stars": [
+      {
+        "x": 220,
+        "y": 196
+      },
+      {
+        "x": 470,
+        "y": 148
+      },
+      {
+        "x": 730,
+        "y": 152
+      },
+      {
+        "x": 950,
+        "y": 196
+      },
+      {
+        "x": 1220,
+        "y": 145
+      },
+      {
+        "x": 1530,
+        "y": 152
+      },
+      {
+        "x": 1660,
+        "y": 150
+      }
+    ],
+    "checkpoints": [
+      550,
+      1050,
+      1450
+    ],
+    "platforms": [
+      {
+        "x": 460,
+        "y": 180,
+        "width": 130,
+        "height": 12
+      },
+      {
+        "x": 730,
+        "y": 185,
+        "width": 110,
+        "height": 12
+      },
+      {
+        "x": 1220,
+        "y": 178,
+        "width": 130,
+        "height": 12
+      },
+      {
+        "x": 1510,
+        "y": 205,
+        "width": 90,
+        "height": 25
+      },
+      {
+        "x": 1590,
+        "y": 180,
+        "width": 95,
+        "height": 50
+      },
+      {
+        "x": 1700,
+        "y": 180,
+        "width": 130,
+        "height": 50
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "yogurt",
+        "x": 330,
+        "range": 55
+      },
+      {
+        "kind": "tomato",
+        "x": 900,
+        "range": 85
+      },
+      {
+        "kind": "yogurt",
+        "x": 1360,
+        "range": 65
+      }
+    ],
+    "ladders": []
+  },
+  {
+    "id": "snow",
+    "title": "Surf de neu: tot de baixada!",
+    "subtitle": "6–7 anys · Surf de neu a la muntanya",
+    "mode": "snow",
+    "ageMin": 6,
+    "width": 2300,
+    "spawn": 64,
+    "finish": 2150,
+    "goalY": 230,
+    "hint": "La pista fa baixada. ← Frena · → Accelera · ESPAI Salta els obstacles amb la taula.",
+    "stars": [
+      {
+        "x": 210,
+        "y": 196
+      },
+      {
+        "x": 470,
+        "y": 150
+      },
+      {
+        "x": 760,
+        "y": 196
+      },
+      {
+        "x": 1050,
+        "y": 150
+      },
+      {
+        "x": 1350,
+        "y": 196
+      },
+      {
+        "x": 1640,
+        "y": 153
+      },
+      {
+        "x": 1980,
+        "y": 196
+      }
+    ],
+    "checkpoints": [
+      620,
+      1220,
+      1780
+    ],
+    "platforms": [],
+    "enemies": [
+      {
+        "kind": "snowball",
+        "x": 350,
+        "range": 42
+      },
+      {
+        "kind": "snowball",
+        "x": 820,
+        "range": 55
+      },
+      {
+        "kind": "snowball",
+        "x": 1370,
+        "range": 50
+      },
+      {
+        "kind": "snowball",
+        "x": 1910,
+        "range": 60
+      }
+    ],
+    "ladders": []
+  },
+  {
+    "id": "nature",
+    "title": "Aventura entre les capçades",
+    "subtitle": "7–9 anys · Arbres, tirolines i lianes",
+    "mode": "nature",
+    "ageMin": 7,
+    "width": 1600,
+    "spawn": 64,
+    "finish": 1390,
+    "goalY": 140,
+    "hint": "↑ Grimpa a l’arbre i agafa’t · → Travessa la tirolina i gronxa’t · ESPAI Deixa’t anar cap a la liana següent.",
+    "stars": [
+      {
+        "x": 300,
+        "y": 70
+      },
+      {
+        "x": 520,
+        "y": 85
+      },
+      {
+        "x": 760,
+        "y": 110
+      },
+      {
+        "x": 945,
+        "y": 150
+      },
+      {
+        "x": 1145,
+        "y": 145
+      },
+      {
+        "x": 1350,
+        "y": 110
+      }
+    ],
+    "checkpoints": [
+      500,
+      750,
+      1200
+    ],
+    "platforms": [
+      {
+        "x": 300,
+        "y": 100,
+        "width": 140,
+        "height": 14
+      },
+      {
+        "x": 755,
+        "y": 140,
+        "width": 230,
+        "height": 14
+      },
+      {
+        "x": 1320,
+        "y": 140,
+        "width": 230,
+        "height": 14
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "yogurt",
+        "x": 550,
+        "range": 45
+      },
+      {
+        "kind": "pepper",
+        "x": 1050,
+        "range": 55
+      }
+    ],
+    "ladders": [
+      {
+        "x": 300,
+        "top": 90,
+        "bottom": 230
+      },
+      {
+        "x": 780,
+        "top": 130,
+        "bottom": 230
+      },
+      {
+        "x": 1310,
+        "top": 130,
+        "bottom": 230
+      }
+    ],
+    "ziplines": [
+      {
+        "x1": 365,
+        "y1": 100,
+        "x2": 690,
+        "y2": 125
+      }
+    ],
+    "vines": [
+      {
+        "x": 920,
+        "y": 25,
+        "length": 110
+      },
+      {
+        "x": 1110,
+        "y": 20,
+        "length": 110
+      }
+    ]
+  },
+  {
+    "id": "skate",
+    "title": "Amb el monopatí fins al nivell 10",
+    "subtitle": "9–10 anys · Un últim ollie",
+    "mode": "skate",
+    "ageMin": 9,
+    "width": 2400,
+    "spawn": 64,
+    "finish": 2250,
+    "goalY": 230,
+    "hint": "→ Impulsa’t · ← Frena · ESPAI Fes un ollie. Supera rampes i esquiva enemics fins a l’arc de la festa.",
+    "stars": [
+      {
+        "x": 220,
+        "y": 196
+      },
+      {
+        "x": 470,
+        "y": 153
+      },
+      {
+        "x": 740,
+        "y": 196
+      },
+      {
+        "x": 1040,
+        "y": 149
+      },
+      {
+        "x": 1340,
+        "y": 196
+      },
+      {
+        "x": 1620,
+        "y": 147
+      },
+      {
+        "x": 1930,
+        "y": 196
+      },
+      {
+        "x": 2210,
+        "y": 166
+      }
+    ],
+    "checkpoints": [
+      650,
+      1220,
+      1810
+    ],
+    "platforms": [
+      {
+        "x": 470,
+        "y": 205,
+        "width": 110,
+        "height": 25
+      },
+      {
+        "x": 1040,
+        "y": 194,
+        "width": 120,
+        "height": 36
+      },
+      {
+        "x": 1620,
+        "y": 197,
+        "width": 130,
+        "height": 33
+      },
+      {
+        "x": 2170,
+        "y": 201,
+        "width": 100,
+        "height": 29
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "tomato",
+        "x": 320,
+        "range": 50
+      },
+      {
+        "kind": "yogurt",
+        "x": 830,
+        "range": 55
+      },
+      {
+        "kind": "pepper",
+        "x": 1380,
+        "range": 65
+      },
+      {
+        "kind": "tomato",
+        "x": 1940,
+        "range": 55
+      }
+    ],
+    "ladders": []
+  }
+]

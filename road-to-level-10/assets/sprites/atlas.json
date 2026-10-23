@@ -1,0 +1,221 @@
+{
+  "baby": {
+    "image": "assets/sprites/baby.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "crawl": {
+        "start": 0,
+        "end": 3,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "idle": {
+        "start": 4,
+        "end": 5,
+        "frameRate": 3,
+        "repeat": -1
+      }
+    }
+  },
+  "toddler": {
+    "image": "assets/sprites/toddler.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "walk": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "jump": {
+        "start": 6,
+        "end": 7,
+        "frameRate": 3,
+        "repeat": -1
+      }
+    }
+  },
+  "child": {
+    "image": "assets/sprites/child.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "run": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "jump": {
+        "start": 6,
+        "end": 7,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "climb": {
+        "start": 8,
+        "end": 11,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  },
+  "skater": {
+    "image": "assets/sprites/skater.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "roll": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "push": {
+        "start": 6,
+        "end": 9,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "ollie": {
+        "start": 10,
+        "end": 12,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "land": {
+        "start": 13,
+        "end": 14,
+        "frameRate": 3,
+        "repeat": -1
+      }
+    }
+  },
+  "moto_rider": {
+    "image": "assets/sprites/moto_rider.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "ride": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  },
+  "moto": {
+    "image": "assets/sprites/moto.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "roll": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  },
+  "yogurt": {
+    "image": "assets/sprites/yogurt.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "walk": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "attack": {
+        "start": 6,
+        "end": 8,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  },
+  "tomato": {
+    "image": "assets/sprites/tomato.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "roll": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  },
+  "pepper": {
+    "image": "assets/sprites/pepper.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": {
+        "start": 0,
+        "end": 1,
+        "frameRate": 3,
+        "repeat": -1
+      },
+      "jump": {
+        "start": 2,
+        "end": 5,
+        "frameRate": 8,
+        "repeat": -1
+      },
+      "dash": {
+        "start": 6,
+        "end": 8,
+        "frameRate": 8,
+        "repeat": -1
+      }
+    }
+  }
+}

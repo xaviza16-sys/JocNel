@@ -1,0 +1,8 @@
+{
+  "image": "assets/sprites/terrain.png",
+  "tileWidth": 16,
+  "tileHeight": 16,
+  "columns": 8,
+  "tileCount": 16,
+  "note": "Starter placeholder tiles; replace with commissioned tileset."
+}
