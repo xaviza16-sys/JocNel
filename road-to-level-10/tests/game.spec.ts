@@ -194,9 +194,11 @@ test('hospital staff can be avoided and Nel meets his newborn brother before con
   await page.keyboard.down('ArrowRight');
   // A missed dodge returns to the checkpoint and permits another attempt.
   await expect(page.locator('#status')).toContainText('1 ensopegades', { timeout: 6000 });
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 240; i++) {
     if ((await page.locator('#status').innerText()).includes('GERMANET TROBAT')) break;
-    await page.keyboard.press('Space'); await page.waitForTimeout(250);
+    // Keep the forgiving jump buffer supplied across slower CI frames,
+    // rather than synchronizing each retry with the same staff patrol phase.
+    await page.keyboard.press('Space'); await page.waitForTimeout(100);
   }
   await page.keyboard.up('ArrowRight');
   await expect(page.locator('#status')).toContainText('GERMANET TROBAT');
