@@ -1,10 +1,11 @@
+import type { ScoreStats } from './scores';
 import Phaser from 'phaser';
 import type { Level } from './model';
 import { InputManager, type AudioManager } from './systems';
 import { SnowboardController, snowGround } from './traversal';
 import { prop } from './adventure-art';
 
-interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
+interface Hooks { score: (level: Level, stats: ScoreStats) => void; begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
 export class Snowboard extends Phaser.Scene {
   level!: Level;
   controls!: InputManager;
@@ -103,6 +104,7 @@ export class Snowboard extends Phaser.Scene {
       this.track.fillStyle(0xffffff).fillRect(b.x - 22, b.feet - 4, 3, 2).fillRect(b.x - 29, b.feet - 7, 2, 2);
     }
     const pct = Math.min(100, Math.round(b.x / this.level.finish * 100));
+    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps });
     this.hud.setText(`★ ${this.collected}/${this.stars.length}  ·  ${Math.round(b.speed)} km/h  ·  ${pct}%`);
     this.hint.setVisible(this.elapsed < 4500);
     document.getElementById('status')!.textContent = `SURF DE NEU · ${b.jumps} salts · ${this.bumps} ensopegades · Baixada ${Math.round(snowGround(b.x) - snowGround(64))} m · ${pct}%`;

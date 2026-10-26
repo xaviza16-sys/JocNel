@@ -1,9 +1,12 @@
+import { controlCaption } from './control-ui';
+import type { ScoreStats } from './scores';
 import Phaser from 'phaser';
 import { InputManager, type AudioManager } from './systems';
 import { RaceController, FALL_SECONDS, SPIN_SECONDS, type RoadKind } from './race-model';
 import type { Level } from './model';
 
 interface RaceHooks {
+  score: (level: Level, stats: ScoreStats) => void;
   begin: (level: Level) => void;
   complete: (level: Level, copy: string) => void;
   pause: () => void;
@@ -131,13 +134,14 @@ export class MotoRace extends Phaser.Scene {
     for (let i = this.usedSprites; i < this.sprites.length; i++) this.sprites[i].setVisible(false);
     this.drawRider(240 + race.steering * 212);
     const pct = Math.round(race.distance / this.level.race!.length * 100);
+    this.hooks.score(this.level, { progress: pct, boosts: race.powerups, dodges: race.avoided, bumps: race.hits + race.spins });
     this.hud.setText(`TURBOS ${race.powerups} · CAIGUDES ${race.hits}`);
     this.effect.setText(race.spin > 0 ? 'PATINADA! ↻' : race.needsGetUp ? 'AIXECA’T ↑' : race.fall > 0 ? 'TORNANT A PUJAR' : race.slow > 0 ? 'FULLES · A POC A POC' : race.boost > 0 ? `TURBO ${race.boost.toFixed(1)}s` : `${pct}% CAP A L’ESCOLA BRESSOL`);
     this.toast.setVisible(race.distance < 45 || race.feedbackTime > 0 || race.fall > 0);
     this.toast.setText(race.needsGetUp ? 'Prem ESPAI o AIXECAR-SE per tornar a la moto' : race.feedbackTime > 0 ? race.feedback : '← → Condueix · Les fletxes del terra donen turbo');
     this.meter.clear().fillStyle(0x263a39).fillRect(7, 33, 125, 3).fillStyle(0xf3c969).fillRect(7, 33, 125 * race.distance / this.level.race!.length, 3);
     const action = document.querySelector<HTMLButtonElement>('[data-action="jump"]')!;
-    action.hidden = race.fall === 0; action.textContent = 'AIXECAR-SE ↑'; action.setAttribute('aria-label', 'Aixecar-se');
+    action.hidden = race.fall === 0; controlCaption(action, 'Aixecar-se'); action.setAttribute('aria-label', 'Aixecar-se');
     document.getElementById('status')!.textContent = `${race.powerups} potenciadors · ${race.hits} caigudes · ${race.spins} patinades · ${race.avoided} obstacles esquivats · ${pct}% del camí${race.fall > 0 ? ' · CAIGUT' : ''}${race.slow > 0 ? ' · FULLES' : ''}${race.spin > 0 ? ' · PATINANT' : ''}`;
   }
   private drawItem(kind: RoadKind, x: number, y: number, s: number) {

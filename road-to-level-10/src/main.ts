@@ -12,6 +12,8 @@ import { Snowboard } from './snowboard-scene';
 import { Skatepark } from './skate-scene';
 import { loadOutdoorArt, createOutdoorFrames } from './outdoor-art';
 import './style.css';
+import { ScoreManager, runPoints, type ScoreStats } from './scores';
+import { controlCaption } from './control-ui';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const overlay = $('overlay');
@@ -19,6 +21,13 @@ let completionTimer: number | undefined;
 let storage: Storage | undefined;
 try { storage = window.localStorage; } catch { /* Storage can be unavailable. */ }
 const saves = new SaveManager(storage);
+const scores = new ScoreManager(storage);
+let lastStats: ScoreStats = { progress: 0 };
+function recordScore(level: Level, stats: ScoreStats) {
+  lastStats = stats;
+  if (scores.active && !scores.active.endedAt) scores.update(level.id, stats);
+  $('score').textContent = `${scores.total.toLocaleString('ca')} PTS`;
+}
 const progress = saves.read();
 const audio = new AudioManager(); audio.muted = progress.muted;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,20 +55,21 @@ function playingUI(playing: boolean) {
   $('pause').hidden = !playing; $('touch-controls').hidden = !playing;
   document.querySelector<HTMLButtonElement>('[data-action="jump"]')!.hidden = activeLevel.mode === 'moto';
   const action = document.querySelector<HTMLButtonElement>('[data-action="jump"]')!;
-  action.textContent = activeLevel.mode === 'baby' ? 'EMPÈNYER ▷' : activeLevel.mode === 'nature' ? 'SALTAR / DEIXAR-SE ANAR' : 'SALTAR ↑';
+  controlCaption(action, activeLevel.mode === 'baby' ? 'Empènyer' : activeLevel.mode === 'nature' ? 'Saltar / deixar-se anar' : activeLevel.mode === 'skate' ? 'Ollie' : 'Saltar');
   action.setAttribute('aria-label', activeLevel.mode === 'baby' ? 'Empènyer' : 'Saltar');
   document.querySelector<HTMLButtonElement>('[data-action="climb"]')!.hidden = !['nature', 'baby'].includes(activeLevel.mode);
 }
 function gameplayKey() { return activeLevel.mode === 'moto' ? 'MotoRace' : activeLevel.mode === 'snow' ? 'Snowboard' : activeLevel.mode === 'skate' ? 'Skatepark' : 'PlatformLevel'; }
 function gameplay() { return game.scene.getScene(gameplayKey()) as PlatformLevel | MotoRace | Snowboard | Skatepark; }
 function startLevel(level: Level) {
+  scores.ensure(); lastStats = { progress: 0 };
   activeLevel = level;
-  for (const key of ['Menu', 'LevelSelect', 'Pause', 'Invitation', 'PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark']) game.scene.stop(key);
+  for (const key of ['Menu', 'Scores', 'LevelSelect', 'Pause', 'Invitation', 'PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark']) game.scene.stop(key);
   audio.playTheme(level.mode);
   game.scene.start(gameplayKey(), { level });
 }
 function returnMenu() {
-  for (const key of ['PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark', 'Pause', 'Invitation', 'LevelSelect']) game.scene.stop(key);
+  for (const key of ['PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark', 'Scores', 'Pause', 'Invitation', 'LevelSelect']) game.scene.stop(key);
   game.scene.start('Menu');
 }
 
@@ -94,13 +104,20 @@ class Menu extends Phaser.Scene {
   constructor() { super('Menu'); }
   create() {
     playingUI(false); $('chapter').textContent = 'L’INICI DE L’AVENTURA D’EN NEL';
+    $('score').textContent = `${scores.total.toLocaleString('ca')} PTS`;
     audio.playTheme('menu');
     $('status').textContent = '✦ Al teu ritme, amb intents il·limitats'; drawWorld(this, 'moto', 960);
     const hero = this.add.image(380, 238, 'heroes', 'skater-0').setOrigin(.5, 1);
     hero.setDisplaySize(85 * hero.frame.width / hero.frame.height, 85);
     const { root, actions } = panel('PREM COMENÇAR I TORNA AL PRINCIPI', 'L’aventura d’en Nel', 'Acompanya en Nel: de gatejar per casa a descobrir el món. Recull records i descobreix la seva festa.');
-    const resume = levels.find(l => !progress.completed.includes(l.id)) || levels[0];
-    actions.append(button(progress.completed.length ? 'Continuar l’aventura →' : 'Començar l’aventura! →', () => startLevel(resume)), button('Triar capítol', () => this.scene.start('LevelSelect'), true));
+    const resume = levels.find(l => !scores.active?.chapters[l.id]?.stats.complete) || levels[0];
+    const label = document.createElement('label'); label.className = 'player-field'; label.textContent = 'Nom del jugador';
+    const name = document.createElement('input'); name.id = 'player-name'; name.maxLength = 24; name.value = scores.player; name.autocomplete = 'off'; name.addEventListener('keydown', event => event.stopPropagation()); label.append(name); root.insertBefore(label, actions);
+    actions.append(button(progress.completed.length ? 'Continuar l’aventura →' : 'Començar l’aventura! →', () => {
+      const continuing = scores.active && !scores.active.endedAt && name.value.trim() === scores.player;
+      if (!continuing) scores.begin(name.value);
+      startLevel(continuing ? resume : levels[0]);
+    }), button('Triar capítol', () => { if (!scores.active || scores.active.endedAt || name.value.trim() !== scores.player) scores.begin(name.value); this.scene.start('LevelSelect'); }, true), button('Puntuacions', () => this.scene.start('Scores'), true));
     const small = document.createElement('small'); small.textContent = '7 capítols · Dels primers descobriments al nivell 10'; root.append(small);
   }
 }
@@ -123,13 +140,17 @@ class LevelSelect extends Phaser.Scene {
 
 
 function finishLevel(level: Level, copy: string) {
+  if (scores.active && !scores.active.endedAt) {
+    recordScore(level, { ...lastStats, progress: 100, complete: true });
+    if (!nextLevel(level.id)) scores.finish();
+  }
   if (!progress.completed.includes(level.id)) progress.completed.push(level.id);
   saves.write(progress); audio.sfx('complete'); playingUI(false);
   const next = nextLevel(level.id);
   const heading = next ? level.id === 'baby' ? 'La teva primera aventura!' : 'Un pas més!' : 'Has arribat al nivell 10, Nel!';
   if (!next) { celebrate(); audio.playTheme('party'); }
   const showResult = () => {
-    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, copy, true);
+    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, `${copy} Puntuació de la partida: ${scores.total.toLocaleString('ca')} punts.`, true);
     actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
   };
   window.clearTimeout(completionTimer); completionTimer = undefined;
@@ -166,6 +187,7 @@ class Pause extends Phaser.Scene {
     audio.setPaused(true);
     const { root, actions } = panel('UN PETIT DESCANS', 'Al teu ritme', 'La teva aventura t’espera just on l’has deixada.', true);
     actions.append(button('Continuar jugant →', resumeGame), button('Tornar a l’inici', returnMenu, true));
+    actions.append(button('Desar i acabar partida', () => { scores.finish(); game.scene.stop(gameplayKey()); this.scene.start('Scores'); }, true));
     const restart = button(activeLevel.mode === 'baby' ? 'Recol·locar els blocs i tornar a començar' : 'Reiniciar el capítol', () => startLevel(activeLevel), true);
     restart.className = 'link-button'; root.append(restart);
     const skip = button('Ometre aquest capítol →', () => {
@@ -174,6 +196,30 @@ class Pause extends Phaser.Scene {
   }
 }
 let invitationReturn: 'menu' | 'pause' | 'complete' = 'menu';
+class Scores extends Phaser.Scene {
+  constructor() { super('Scores'); }
+  create() {
+    playingUI(false);
+    const { root, actions } = panel('EL MARCADOR D’EN NEL', 'Puntuacions', 'Partides dels jugadors d’aquest dispositiu. Cada capítol puntua una vegada; repetir-lo permet millorar la marca.', true);
+    root.classList.add('score-panel');
+    const list = document.createElement('ol'); list.className = 'score-list';
+    for (const run of scores.runs) {
+      const row = document.createElement('li');
+      const name = document.createElement('strong'); name.textContent = run.player;
+      const points = document.createElement('b'); points.textContent = `${runPoints(run).toLocaleString('ca')} PTS`;
+      const detail = document.createElement('small'); detail.textContent = `${new Date(run.startedAt).toLocaleDateString('ca')} · ${Object.values(run.chapters).filter(c => c.stats.complete).length}/7 capítols · ${run.endedAt ? 'Acabada' : 'En curs'}`;
+      row.append(name, points, detail); list.append(row);
+    }
+    if (!scores.runs.length) { const empty = document.createElement('p'); empty.textContent = 'Encara no hi ha partides. Comença la teva aventura!'; root.insertBefore(empty, actions); }
+    root.insertBefore(list, actions);
+    const rules = document.createElement('small'); rules.textContent = 'Estrella: +100 · turbo: +50 · obstacle esquivat: +25 · quarter: +200 · tirolina: +150 · liana: +100 · escala o gos: +100 · avançar: +25 cada 10% · capítol: +500 · ensopegada: −25.'; root.insertBefore(rules, actions);
+    actions.append(button('Descarregar puntuacions (.json)', () => {
+      const url = URL.createObjectURL(new Blob([scores.exportFile()], { type: 'application/json' }));
+      const link = document.createElement('a'); link.href = url; link.download = 'puntuacions-nel.json'; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }), button('Tornar a l’inici', returnMenu, true));
+    if (!scores.persistent) { const notice = document.createElement('p'); notice.textContent = 'Aquest navegador no permet desar les puntuacions. Descarrega el fitxer abans de tancar la pàgina.'; root.append(notice); }
+  }
+}
 function showInvitation() {
   if (game.scene.isActive('Invitation')) return;
   if (game.scene.isActive(gameplayKey())) pauseGame();
@@ -214,20 +260,20 @@ game = new Phaser.Game({
   physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 650 }, debug: false } },
   input: { activePointers: 4, keyboard: { capture: [32, 37, 38, 39, 40] } },
   audio: { noAudio: true }, scene: [Boot, Preload, Menu, LevelSelect, new PlatformLevel({
-    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel, score: recordScore,
     begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
   }), new Skatepark({
-    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel, score: recordScore,
     begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
   }), new Snowboard({
-    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel, score: recordScore,
     begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
   }), new MotoRace({
-    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel, score: recordScore,
     begin: level => {
       overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint;
     },
-  }), Invitation, Pause],
+  }), Invitation, Pause, Scores],
 });
 $('pause').onclick = pauseGame;
 $('invite-shortcut').onclick = showInvitation;

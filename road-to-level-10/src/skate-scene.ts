@@ -1,3 +1,4 @@
+import type { ScoreStats } from './scores';
 import Phaser from 'phaser';
 import type { Level } from './model';
 import { InputManager, type AudioManager } from './systems';
@@ -5,7 +6,7 @@ import { SkateController, skateGround, skateSlope, quarterLips } from './skate-m
 import { outdoorBackdrop } from './outdoor-art';
 import { prop } from './adventure-art';
 
-interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
+interface Hooks { score: (level: Level, stats: ScoreStats) => void; begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
 export class Skatepark extends Phaser.Scene {
   level!: Level;
   controls!: InputManager;
@@ -91,6 +92,7 @@ export class Skatepark extends Phaser.Scene {
     this.rider.setDisplaySize(50 * this.rider.frame.realWidth / this.rider.frame.realHeight, 50).setTint(this.elapsed < this.protectedUntil ? 0xd2f1ed : 0xffffff);
     this.target.setPosition(b.x, 135);
     const pct = Math.min(100, Math.round(b.x / this.level.finish * 100));
+    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps, quarters: b.quarters.size });
     this.hud.setText(`QUARTERS ${b.quarters.size}/4 · ★ ${this.collected} · ${pct}%`);
     this.hint.setVisible(this.elapsed < 5000);
     document.getElementById('status')!.textContent = `SKATEPARK · ${b.quarters.size} quarters · ${b.ollies} salts · ${this.bumps} ensopegades · ${pct}%`;

@@ -1,3 +1,4 @@
+import type { ScoreStats } from './scores';
 import Phaser from 'phaser';
 import type { Level } from './model';
 import { InputManager, type AudioManager } from './systems';
@@ -9,7 +10,7 @@ import { babyAnimationFrame } from './baby-animation';
 import { toddlerAnimationFrame } from './toddler-animation';
 import { zipPose, vinePose, nextSwingAngle } from './traversal';
 
-interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
+interface Hooks { score: (level: Level, stats: ScoreStats) => void; begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
 interface Enemy { body: Phaser.Physics.Arcade.Image; art: Phaser.GameObjects.Image; kind: EnemyKind; anchor: number; range: number; direction: number; phase: number; lastJump: number; distance: number; lastX: number }
 
 export class PlatformLevel extends Phaser.Scene {
@@ -378,6 +379,7 @@ export class PlatformLevel extends Phaser.Scene {
   }
   private updateHud() {
     const pct = Math.min(100, Math.max(0, Math.round(this.player.x / this.level.finish * 100)));
+    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps, puzzles: this.puzzle?.readyCount || 0, dog: this.dogCrossed, ziplines: this.zipped.size, vines: this.swung.size });
     this.hud.setText(`★ ${this.collected}/${this.level.stars.length}  ·  ${pct}%`);
     this.note.setText(this.zip ? 'TIROLINA' : this.vine ? `LIANA ${this.vine.index + 1}` : this.climbing || this.mantle ? '↑ GRIMPANT' : this.clock < this.protectedUntil ? 'POTS CONTINUAR!' : this.checkpoint > this.level.spawn ? '✓ PUNT DESAT' : 'INTENTS IL·LIMITATS');
     this.hint.setVisible(this.clock < 5200 || !!this.climbing || !!this.vine || !!this.zip || this.level.mode === 'baby');

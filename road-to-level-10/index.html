@@ -13,11 +13,14 @@
       <main>
         <div class="intro"><span class="eyebrow">CRÉIXER ÉS TOTA UNA AVENTURA</span><h1>Deu anys. Mil aventures.<br /><span>La festa d’en Nel t’espera.</span></h1><p>Cada gran història comença amb una petita passa. Juguem?</p></div>
         <section class="game-shell" aria-label="El joc d’en Nel: nivell 10">
-          <div class="game-top"><span><i></i> NEL · NIVELL 10</span><span id="chapter">L’INICI DE L’AVENTURA D’EN NEL</span></div>
+          <div class="game-top"><span><i></i> NEL · NIVELL 10</span><output id="score" aria-label="Puntuació de la partida">0 PTS</output><span id="chapter">L’INICI DE L’AVENTURA D’EN NEL</span></div>
           <div class="viewport"><div id="game" role="img" aria-label="Fletxes o A i D per moure’t. Amb en Nel nadó, espai empeny i fletxa amunt grimpa. Als altres capítols, espai salta o et deixa anar de la liana; amunt o W permet grimpar i agafar-te. Amb la moto, condueix per esquivar obstacles i recollir potenciadors."></div><div id="overlay" aria-live="polite"></div></div>
           <div class="game-bottom"><span id="status">✦ Al teu ritme, amb intents il·limitats</span><div><button id="pause" hidden>Pausa</button><button id="invite-shortcut">Veure la invitació ↗</button></div></div>
         </section>
-        <div id="touch-controls" hidden aria-label="Controls tàctils"><div><button data-action="left" aria-label="Moure cap a l’esquerra">◀</button><button data-action="right" aria-label="Moure cap a la dreta">▶</button></div><div><button data-action="climb" aria-label="Grimpar">GRIMPAR ⇧</button><button data-action="jump" aria-label="Saltar">SALTAR ↑</button></div></div>
+        <div id="touch-controls" hidden aria-label="Controls tàctils">
+          <div class="direction-bank"><button data-action="left" aria-label="Moure cap a l’esquerra"><span class="control-glyph" aria-hidden="true">◀</span></button><button data-action="right" aria-label="Moure cap a la dreta"><span class="control-glyph" aria-hidden="true">▶</span></button></div>
+          <div class="action-bank"><button data-action="climb" aria-label="Grimpar"><span class="control-glyph" aria-hidden="true">B</span><span class="control-caption">Grimpar</span></button><button data-action="jump" aria-label="Saltar"><span class="control-glyph" aria-hidden="true">A</span><span class="control-caption">Saltar</span></button></div>
+        </div>
         <p class="rotate-hint">↻ Per jugar més còmodament, gira el mòbil. La invitació sempre és a l’abast.</p>
         <div class="instructions"><span><kbd>←</kbd><kbd>→</kbd> Mou-te / condueix</span><span><kbd>ESPAI</kbd> Acció / salt</span><span><kbd>↑</kbd> Grimpa / agafa’t</span><span>♡ Sense presses. Intents il·limitats. Tot són aventures.</span></div>
       </main>
