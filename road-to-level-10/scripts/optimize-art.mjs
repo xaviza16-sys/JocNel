@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 const files = ['assets/race/rider-rear-v1.png', 'assets/race/autumn-street-v2.png', 'assets/adventure/evolution-v2.png', 'assets/adventure/enemies-v1.png', 'assets/adventure/worlds-v1.png', 'assets/adventure/mechanics-v1.png', 'assets/adventure/family-nel-v1.png', 'assets/adventure/family-nel-v2.png', 'assets/adventure/baby-nel-v1.png', 'assets/adventure/baby-nel-hug-v1.png'];
 const browser = await chromium.launch();
 files.push('assets/adventure/toddler-nel-v1.png', 'assets/adventure/toy-moto-parked-v1.png');
+files.push('assets/race/nel-promenade-rider-v1.png', 'assets/race/promenade-v1.png');
 try {
   const page = await browser.newPage();
   for (const file of files) {

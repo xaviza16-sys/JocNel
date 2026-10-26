@@ -192,7 +192,7 @@
     "width": 1920,
     "spawn": 64,
     "finish": 1830,
-    "hint": "Avances automàticament. Condueix amb ← → o A / D: esquiva obstacles i recull escut, imant i turbo.",
+    "hint": "← → Condueix · Fulles: alenteixen · Famílies: caus i t’aixeques amb ESPAI · Caques: cal reiniciar · Fletxes: turbo breu.",
     "stars": [],
     "checkpoints": [],
     "platforms": [],
@@ -203,192 +203,97 @@
         {
           "distance": 28,
           "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 40,
-          "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 55,
-          "lane": 0,
-          "kind": "shield"
+          "kind": "boost"
         },
         {
           "distance": 65,
-          "lane": 1,
-          "kind": "coin"
-        },
-        {
-          "distance": 85,
-          "lane": -1,
-          "kind": "cone"
+          "lane": 0,
+          "kind": "leaves"
         },
         {
           "distance": 110,
           "lane": 0,
-          "kind": "cone"
+          "kind": "family"
         },
         {
-          "distance": 125,
-          "lane": 0,
-          "kind": "memory"
-        },
-        {
-          "distance": 130,
+          "distance": 160,
           "lane": 1,
-          "kind": "star"
-        },
-        {
-          "distance": 150,
-          "lane": 1,
-          "kind": "magnet"
-        },
-        {
-          "distance": 180,
-          "lane": 0,
-          "kind": "puddle"
-        },
-        {
-          "distance": 200,
-          "lane": -1,
-          "kind": "star"
-        },
-        {
-          "distance": 215,
-          "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 220,
-          "lane": 1,
-          "kind": "coin"
-        },
-        {
-          "distance": 230,
-          "lane": 1,
-          "kind": "star"
-        },
-        {
-          "distance": 260,
-          "lane": 1,
-          "kind": "blocks"
-        },
-        {
-          "distance": 280,
-          "lane": -1,
           "kind": "boost"
         },
         {
-          "distance": 310,
+          "distance": 205,
           "lane": 0,
-          "kind": "cone"
+          "kind": "poop"
         },
         {
-          "distance": 340,
+          "distance": 245,
           "lane": -1,
-          "kind": "star"
+          "kind": "leaves"
+        },
+        {
+          "distance": 280,
+          "lane": 1,
+          "kind": "family"
+        },
+        {
+          "distance": 320,
+          "lane": 0,
+          "kind": "boost"
         },
         {
           "distance": 355,
           "lane": -1,
-          "kind": "star"
-        },
-        {
-          "distance": 380,
-          "lane": -1,
-          "kind": "puddle"
+          "kind": "poop"
         },
         {
           "distance": 390,
-          "lane": 1,
-          "kind": "memory"
-        },
-        {
-          "distance": 410,
           "lane": 0,
-          "kind": "shield"
+          "kind": "family"
         },
         {
-          "distance": 445,
+          "distance": 430,
           "lane": 1,
-          "kind": "cone"
+          "kind": "leaves"
         },
         {
           "distance": 470,
           "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 490,
-          "lane": 1,
           "kind": "boost"
         },
         {
-          "distance": 525,
-          "lane": 0,
-          "kind": "blocks"
+          "distance": 505,
+          "lane": 1,
+          "kind": "poop"
         },
         {
-          "distance": 550,
+          "distance": 545,
           "lane": -1,
-          "kind": "magnet"
+          "kind": "family"
         },
         {
           "distance": 580,
+          "lane": 0,
+          "kind": "leaves"
+        },
+        {
+          "distance": 625,
+          "lane": -1,
+          "kind": "boost"
+        },
+        {
+          "distance": 665,
+          "lane": 0,
+          "kind": "poop"
+        },
+        {
+          "distance": 710,
           "lane": 1,
-          "kind": "star"
-        },
-        {
-          "distance": 600,
-          "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 610,
-          "lane": -1,
-          "kind": "coin"
-        },
-        {
-          "distance": 620,
-          "lane": -1,
-          "kind": "star"
-        },
-        {
-          "distance": 650,
-          "lane": -1,
-          "kind": "cone"
-        },
-        {
-          "distance": 650,
-          "lane": 0,
-          "kind": "puddle"
-        },
-        {
-          "distance": 680,
-          "lane": 1,
-          "kind": "star"
-        },
-        {
-          "distance": 700,
-          "lane": 0,
-          "kind": "star"
-        },
-        {
-          "distance": 720,
-          "lane": -1,
-          "kind": "star"
-        },
-        {
-          "distance": 730,
-          "lane": -1,
-          "kind": "memory"
+          "kind": "family"
         },
         {
           "distance": 745,
           "lane": 0,
-          "kind": "star"
+          "kind": "boost"
         }
       ]
     },

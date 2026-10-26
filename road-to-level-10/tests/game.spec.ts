@@ -122,13 +122,25 @@ test('plays all seven chapters with real input and reveals the final invitation'
       if (level.mode === 'nature') await page.keyboard.down('w');
     }
     let done = false;
-    for (let i = 0; i < 120; i++) {
+    let motoSteering = '';
+    for (let i = 0; i < (level.mode === 'moto' ? 120 : 480); i++) {
       if (await page.getByRole('button', { name: /Següent:|Descobrir la invitació/ }).isVisible()) { done = true; break; }
-      if (level.mode !== 'moto') await page.keyboard.press('Space');
+      if (level.mode === 'moto') {
+        const status = await page.locator('#status').innerText();
+        const distance = Number(status.match(/(\d+)%/)?.[1] || 0) * level.race!.length / 100;
+        // Follow the clear side of the promenade, crossing early before the
+        // left-lane poop. Inputs are real keys, including standing after falls.
+        const target = distance > 295 && distance < 375 ? 'ArrowRight' : 'ArrowLeft';
+        if (target !== motoSteering) {
+          if (motoSteering) await page.keyboard.up(motoSteering);
+          await page.keyboard.down(target); motoSteering = target;
+        }
+        if (status.includes('CAIGUT')) await page.keyboard.press('Space');
+      } else await page.keyboard.press('Space');
       if (i === 10) await page.screenshot({ path: `test-results/chapter-${level.id}.png`, fullPage: true });
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(level.mode === 'moto' ? 400 : 100);
     }
-    await page.keyboard.up('ArrowRight'); await page.keyboard.up('w');
+    await page.keyboard.up('ArrowRight'); await page.keyboard.up('ArrowLeft'); await page.keyboard.up('w');
     if (!done) {
       await page.screenshot({ path: `test-results/stuck-${level.id}.png`, fullPage: true });
       throw new Error(`Capítulo atascado: ${level.id}: ${await page.locator('#status').textContent()}`);
@@ -139,6 +151,35 @@ test('plays all seven chapters with real input and reveals the final invitation'
   await expect(page.getByRole('heading', { name: 'En Nel arriba al nivell 10!' })).toBeVisible();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('road-to-10-v1') || '{}').completed)).toEqual(levels.map(l => l.id));
   expect(errors).toEqual([]);
+});
+
+test('motorcycle leaves slow down, pedestrians require getting up, and poop requires restarting on mobile', async ({ browser }) => {
+  test.setTimeout(45000);
+  const context = await browser.newContext({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await choose(page, 'Cap a l’escola bressol!');
+  await expect(page.locator('#status')).toContainText('1 potenciadors', { timeout: 7000 });
+  await expect(page.locator('#status')).toContainText('FULLES', { timeout: 5000 });
+  await expect(page.locator('#status')).toContainText('CAIGUT', { timeout: 7000 });
+  await page.waitForTimeout(1100);
+  const fallen = await page.locator('#status').innerText();
+  await page.waitForTimeout(450);
+  await expect(page.locator('#status')).toHaveText(fallen);
+  await page.screenshot({ path: 'test-results/promenade-fallen-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Aixecar-se', exact: true }).tap();
+  await expect(page.locator('#status')).not.toContainText('CAIGUT', { timeout: 4000 });
+  await expect(page.getByRole('heading', { name: 'Una caca de gos!' })).toBeVisible({ timeout: 8000 });
+  const stopped = await page.locator('#status').innerText();
+  await page.waitForTimeout(400); await expect(page.locator('#status')).toHaveText(stopped);
+  await page.screenshot({ path: 'test-results/promenade-restart-mobile.png', fullPage: true });
+  const save = await page.evaluate(() => JSON.parse(localStorage.getItem('road-to-10-v1') || '{}'));
+  expect(save.completed || []).not.toContain('moto');
+  await page.getByRole('button', { name: 'Tornar a començar →' }).tap();
+  await expect(page.locator('#status')).toContainText('0 potenciadors');
+  await expect(page.locator('#status')).toContainText('0 caigudes');
+  await expect(page.locator('#status')).toContainText('0%');
+  expect(errors).toEqual([]); await context.close();
 });
 
 test('pause, chapter skip, invitation and sound work in the full campaign', async ({ page }) => {

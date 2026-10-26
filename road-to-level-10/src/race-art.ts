@@ -1,21 +1,20 @@
 import Phaser from 'phaser';
-import riderUrl from '../assets/race/rider-rear-v1.webp';
+import riderUrl from '../assets/race/nel-promenade-rider-v1.webp';
+import promenadeUrl from '../assets/race/promenade-v1.webp';
+import { register } from './adventure-art';
 import streetUrl from '../assets/race/autumn-street-v2.webp';
 import atlas from '../assets/race/atlas.json';
 
 export function loadRaceArt(scene: Phaser.Scene) {
   scene.load.image('race-rider', riderUrl);
   scene.load.image('race-street', streetUrl);
+  scene.load.image('promenade', promenadeUrl);
 }
 
 export function createRaceFrames(scene: Phaser.Scene) {
-  const rider = scene.textures.get('race-rider');
-  const image = rider.getSourceImage() as HTMLImageElement;
-  atlas.rider.frames.forEach((name, index) => {
-    const col = index % 4, row = Math.floor(index / 4);
-    const x = Math.round(col * image.width / 4), y = Math.round(row * image.height / 2);
-    rider.add(name, 0, x, y, Math.round((col + 1) * image.width / 4) - x, Math.round((row + 1) * image.height / 2) - y);
-  });
+  register(scene, 'race-rider', [...Array.from({ length: 8 }, (_, i) => `ride-${i}`), 'left', 'right', 'fall-0', 'fall-1', 'fallen', 'rise-0', 'rise-1', 'upright'], 4, 4, [0, .265, .52, .765, 1], undefined, true);
+  register(scene, 'promenade', ['plane', 'hedge-wall', 'stone-wall', 'white-gate', 'grate', 'leaves', 'poop', 'boost'], 4, 2, [0, .34, .52]);
+  register(scene, 'promenade', Array.from({ length: 8 }, (_, i) => `family-${i}`), 4, 2, [.52, .75, 1], undefined, true);
   const street = scene.textures.get('race-street');
   const source = street.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height;

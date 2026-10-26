@@ -1,5 +1,7 @@
 # Crèdits
 
+- Moto pel passeig: nou pilot amb jaqueta turquesa i nous elements de carrer i obstacles, generats amb l’eina integrada d’imatges a partir de la fotografia del passeig. Recursos i prompts a `docs/MOTO_PASSEIG.md`.
+
 - En Nel al segon nivell i la moto aparcada: nou full de 24 poses basat en la fotografia amb granota turquesa i nova vista de la moto a partir dels sprites existents. Generats amb l’eina integrada d’imatges. Fitxers i prompts a `docs/NEL_PRIMERES_PASSES.md`.
 
 - En Nel nadó: nou full de 24 poses i abraçada final generats amb l’eina integrada d’imatges a partir de la fotografia familiar del nadó amb roba clara i mànigues ratllades. Fitxers i prompts a `docs/NEL_NADO_ANIMACIONS.md`.

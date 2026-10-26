@@ -21,6 +21,7 @@ Levels defined in `src/data/levels.json`; schemas validated with TypeScript. Sto
 ## Narrative and mechanics
 - Ages 0–3: no food enemies. Baby crawls; toddler learns walking and jumping.
 - Moto unlocks in 'Camino a la guarde' (roughly age 2–4). The exact real toy bike has a blue body, red circular center, gray T handlebar with red grips, black wheels with pale gray hubs. Recreate its familiar neighborhood street without publishing an exact address.
+- The motorcycle chapter now follows the promenade photograph: teal jacket and gray trousers, pale plane-tree trunks, gray pavers and garden walls. Only road-arrow boosts remain. Leaves slow, pedestrians with children cause a fall requiring Space/touch to stand up, and dog poop stops the run until the player restarts from zero. This explicit user request supersedes the earlier nonblocking collision design for this chapter.
 - From age 4: enemies are **Yogur Mutante**, **Tomate Furioso**, **Pimiento Rojo Ninja**. Avoiding them is the win condition; no violent attacks. Yogurt hops/splats, tomato rolls, pepper jumps/dashes. Introduce progressively.
 - Snow/sled, nature/climbing and skate stages introduce mechanics incrementally. Skate unlocks at 9–10: roll, push, ollie, land; a final food boss rush can be optional and easy.
 - Final screen reveals party invitation, RSVP button with configurable WhatsApp deep link; invitation always reachable from menu. Never hardcode real event data or personal identifying details.

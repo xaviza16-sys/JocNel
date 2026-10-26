@@ -25,7 +25,7 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('toy-moto', parkedMotoUrl);
 }
 
-function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
+export function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
   const texture = scene.textures.get(key), source = texture.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height;
   const context = canvas.getContext('2d', { willReadFrequently: true })!; context.drawImage(source, 0, 0);
