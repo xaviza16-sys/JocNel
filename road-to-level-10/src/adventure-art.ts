@@ -49,7 +49,7 @@ export function register(scene: Phaser.Scene, key: string, frames: string[], col
     const rightEdge = key === 'worlds' && name === 'tree' ? .717 : columnEdges?.[col + 1] ?? (col + 1) / columns;
     const x1 = Math.round(rightEdge * source.width);
     const y0 = Math.round((rowEdges?.[row] ?? row / rows) * source.height), y1 = Math.round((rowEdges?.[row + 1] ?? (row + 1) / rows) * source.height);
-    if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home', 'race-rider', 'race-spin', 'heroes'].includes(key)) {
+    if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home'].includes(key)) {
       return { name, ...silhouetteBounds(data, canvas.width, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }) };
     }
     let l = x1, r = x0, t = y1, b = y0;
