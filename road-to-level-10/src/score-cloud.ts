@@ -30,7 +30,7 @@ export class ScoreCloud {
     return this.inFlight;
   }
   private async json(path: string, init?: RequestInit) {
-    const res = await this.request(`${this.endpoint}${path}`, { ...init, signal: AbortSignal.timeout(10000), credentials: 'omit', cache: 'no-store' });
+    const res = await this.request.call(globalThis, `${this.endpoint}${path}`, { ...init, signal: AbortSignal.timeout(10000), credentials: 'omit', cache: 'no-store' });
     if (!res.ok) throw new Error('Marcador no disponible');
     return res.json();
   }

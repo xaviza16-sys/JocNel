@@ -1,6 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
+test('shared score client uses the native browser fetch for registration, updates and ranking', async ({ page }) => {
+  await page.goto('/');
+  const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' };
+  let uploaded = false;
+  await page.route('https://marcador.example.test/**', async route => {
+    const request = route.request();
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors });
+    let data: object;
+    if (request.method() === 'POST') data = { id: 'shared-1', token: 'test-owner-key' };
+    else if (request.method() === 'PUT') {
+      expect(request.headers().authorization).toBe('Bearer test-owner-key');
+      expect(request.postDataJSON().chapters.baby.stats.stars).toBe(1);
+      uploaded = true; data = { points: 100 };
+    } else data = { runs: [{ player: 'Ona', points: 100 }] };
+    await route.fulfill({ status: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  });
+  const result = await page.evaluate(async () => {
+    const path = '/src/score-cloud.ts';
+    const { ScoreCloud } = await import(path);
+    const cloud = new ScoreCloud('https://marcador.example.test');
+    cloud.queue({ id: 'local-1', player: 'Ona', startedAt: new Date().toISOString(), chapters: { baby: { points: 100, stats: { progress: 20, stars: 1 } } } });
+    await cloud.flush();
+    return { pending: cloud.pending, runs: await cloud.list() };
+  });
+  expect(uploaded).toBe(true); expect(result.pending).toBe(0); expect(result.runs[0].player).toBe('Ona');
+});
+
 test('player scores survive reloads and the downloaded file includes all players', async ({ page }) => {
   await page.goto('/');
   for (const name of ['Ona Sol', 'Pau']) {
