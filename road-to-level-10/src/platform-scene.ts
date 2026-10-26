@@ -36,7 +36,7 @@ export class PlatformLevel extends Phaser.Scene {
   private bonusUntil = 0;
   private puzzle?: BabyPuzzle;
   private blocks: { zone: Phaser.GameObjects.Zone; art: Phaser.GameObjects.Image; index: number }[] = [];
-  private mantle?: { x: number; feet: number; targetX: number; targetFeet: number; elapsed: number };
+  private mantle?: { x: number; feet: number; targetX: number; targetFeet: number; elapsed: number; duration: number };
   private mantles = 0;
   private zip?: { index: number; progress: number };
   private vine?: { index: number; angle: number };
@@ -170,6 +170,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.level.width, 270).startFollow(this.player, true, this.hooks.reducedMotion ? 1 : .15, 1, -72, 0);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#24483e', backgroundColor: '#fff0d1', padding: { x: 6, y: 5 } };
     this.hud = this.add.text(9, 9, '', style).setScrollFactor(0).setDepth(20);
+    this.hud.setVisible(!matchMedia('(pointer: coarse)').matches);
     this.note = this.add.text(471, 9, '', style).setOrigin(1, 0).setScrollFactor(0).setDepth(20);
     this.hint = this.add.text(240, 44, '', { ...style, fontSize: '8px' }).setOrigin(.5, 0).setScrollFactor(0).setDepth(20);
     this.progressBar = this.add.graphics().setScrollFactor(0).setDepth(20);
@@ -236,7 +237,7 @@ export class PlatformLevel extends Phaser.Scene {
       const pose = babyAnimationFrame({ distance: this.babyDistance, time: this.clock,
         moving: travelled > .01 && !airborne,
         pushing: !!axis && this.controls.actionHeld() && !airborne,
-        climbProgress: this.mantle ? this.mantle.elapsed / .46 : undefined,
+        climbProgress: this.mantle ? this.mantle.elapsed / this.mantle.duration : undefined,
         reducedMotion: this.hooks.reducedMotion });
       this.hero.setTexture('baby-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.babyFacingLeft);
       this.hero.setDisplaySize(50 * this.hero.frame.realWidth / this.hero.frame.realHeight, 50);
@@ -308,10 +309,11 @@ export class PlatformLevel extends Phaser.Scene {
     if ((!this.level.dog || this.dogCrossed) && this.player.x >= this.level.finish && atExitHeight) this.complete();
   }
   private babyInteraction(delta: number, axis: number, body: Phaser.Physics.Arcade.Body) {
+    axis = Math.sign(axis);
     const dt = Math.min(delta, 60) / 1000;
     if (this.mantle) {
       const m = this.mantle; m.elapsed += dt;
-      const progress = Math.min(1, m.elapsed / .46);
+      const progress = Math.min(1, m.elapsed / m.duration);
       const vertical = Math.min(1, progress / .65), horizontal = Math.max(0, (progress - .3) / .7);
       body.allowGravity = false; this.player.setVelocity(0, 0);
       this.player.setPosition(m.x + (m.targetX - m.x) * horizontal, m.feet + (m.targetFeet - m.feet) * vertical - body.height / 2);
@@ -331,13 +333,13 @@ export class PlatformLevel extends Phaser.Scene {
     }
     if (!pushing && this.controls.climbHeld() && axis) {
       const surfaces = [
-        ...this.level.platforms.map(p => ({ left: p.x - p.width / 2, right: p.x + p.width / 2, top: p.y })),
-        ...(this.puzzle?.blocks || []).map(b => ({ left: b.x - b.width / 2, right: b.x + b.width / 2, top: 230 - b.height })),
-        ...(this.level.dog ? [{ left: this.level.dog.x - this.level.dog.width / 2, right: this.level.dog.x + this.level.dog.width / 2, top: 230 - this.level.dog.height }] : []),
+        ...this.level.platforms.map(p => ({ left: p.x - p.width / 2, right: p.x + p.width / 2, top: p.y, reach: 32.5 })),
+        ...(this.puzzle?.blocks || []).map(b => ({ left: b.x - b.width / 2, right: b.x + b.width / 2, top: 230 - b.height, reach: b.height + 2 })),
+        ...(this.level.dog ? [{ left: this.level.dog.x - this.level.dog.width / 2, right: this.level.dog.x + this.level.dog.width / 2, top: 230 - this.level.dog.height, reach: 32.5 }] : []),
       ];
-      const surface = surfaces.find(s => canMantle(body.bottom, s.top, axis > 0 ? s.left - body.right : body.left - s.right));
+      const surface = surfaces.find(s => canMantle(body.bottom, s.top, axis > 0 ? s.left - body.right : body.left - s.right, s.reach));
       if (surface) {
-        this.mantle = { x: this.player.x, feet: body.bottom, targetX: axis > 0 ? surface.left + body.width / 2 + 5 : surface.right - body.width / 2 - 5, targetFeet: surface.top - 1, elapsed: 0 };
+        this.mantle = { x: this.player.x, feet: body.bottom, targetX: axis > 0 ? surface.left + body.width / 2 + 5 : surface.right - body.width / 2 - 5, targetFeet: surface.top - 1, elapsed: 0, duration: .46 * Math.max(1, (body.bottom - surface.top) / 30) };
         body.allowGravity = false; this.player.setVelocity(0, 0);
       }
     }
@@ -379,7 +381,7 @@ export class PlatformLevel extends Phaser.Scene {
   }
   private updateHud() {
     const pct = Math.min(100, Math.max(0, Math.round(this.player.x / this.level.finish * 100)));
-    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps, puzzles: this.puzzle?.readyCount || 0, dog: this.dogCrossed, ziplines: this.zipped.size, vines: this.swung.size });
+    this.hooks.score(this.level, { progress: pct, elapsedSeconds: this.clock / 1000, stars: this.collected, bumps: this.bumps, puzzles: this.puzzle?.readyCount || 0, dog: this.dogCrossed, ziplines: this.zipped.size, vines: this.swung.size });
     this.hud.setText(`★ ${this.collected}/${this.level.stars.length}  ·  ${pct}%`);
     this.note.setText(this.zip ? 'TIROLINA' : this.vine ? `LIANA ${this.vine.index + 1}` : this.climbing || this.mantle ? '↑ GRIMPANT' : this.clock < this.protectedUntil ? 'POTS CONTINUAR!' : this.checkpoint > this.level.spawn ? '✓ PUNT DESAT' : 'INTENTS IL·LIMITATS');
     this.hint.setVisible(this.clock < 5200 || !!this.climbing || !!this.vine || !!this.zip || this.level.mode === 'baby');

@@ -61,6 +61,7 @@ export class Snowboard extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.level.width, 1000).startFollow(this.target, true, this.hooks.reducedMotion ? 1 : .16, this.hooks.reducedMotion ? 1 : .13, -65, -5);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#25474d', backgroundColor: '#eff7e7', padding: { x: 6, y: 5 } };
     this.hud = this.add.text(9, 9, '', style).setScrollFactor(0).setDepth(20);
+    this.hud.setVisible(!matchMedia('(pointer: coarse)').matches);
     this.hint = this.add.text(240, 43, '← Frena · → Accelera · ESPAI Esquiva persones i trineus', { ...style, fontSize: '8px' }).setOrigin(.5).setScrollFactor(0).setDepth(20);
     this.controls = new InputManager(this);
     const escape = this.input.keyboard!.addKey('ESC'); escape.on('down', this.hooks.pause);
@@ -104,7 +105,7 @@ export class Snowboard extends Phaser.Scene {
       this.track.fillStyle(0xffffff).fillRect(b.x - 22, b.feet - 4, 3, 2).fillRect(b.x - 29, b.feet - 7, 2, 2);
     }
     const pct = Math.min(100, Math.round(b.x / this.level.finish * 100));
-    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps });
+    this.hooks.score(this.level, { progress: pct, elapsedSeconds: this.elapsed / 1000, stars: this.collected, bumps: this.bumps });
     this.hud.setText(`★ ${this.collected}/${this.stars.length}  ·  ${Math.round(b.speed)} km/h  ·  ${pct}%`);
     this.hint.setVisible(this.elapsed < 4500);
     document.getElementById('status')!.textContent = `SURF DE NEU · ${b.jumps} salts · ${this.bumps} ensopegades · Baixada ${Math.round(snowGround(b.x) - snowGround(64))} m · ${pct}%`;

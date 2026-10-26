@@ -12,8 +12,9 @@ import { Snowboard } from './snowboard-scene';
 import { Skatepark } from './skate-scene';
 import { loadOutdoorArt, createOutdoorFrames } from './outdoor-art';
 import './style.css';
-import { ScoreManager, runPoints, type ScoreStats } from './scores';
+import { ScoreManager, runPoints, speedPoints, scoreText, type ScoreStats } from './scores';
 import { controlCaption } from './control-ui';
+import { ScoreCloud } from './score-cloud';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const overlay = $('overlay');
@@ -22,11 +23,17 @@ let storage: Storage | undefined;
 try { storage = window.localStorage; } catch { /* Storage can be unavailable. */ }
 const saves = new SaveManager(storage);
 const scores = new ScoreManager(storage);
+const cloud = new ScoreCloud(import.meta.env.VITE_SCORE_API_URL || (location.hostname === 'xaviza16-sys.github.io' ? 'https://nel-puntuacions.boldeft65.chatgpt.site' : ''), storage);
+scores.onChange = run => cloud.queue(run);
+window.addEventListener('online', () => { void cloud.flush(); });
 let lastStats: ScoreStats = { progress: 0 };
 function recordScore(level: Level, stats: ScoreStats) {
   lastStats = stats;
   if (scores.active && !scores.active.endedAt) scores.update(level.id, stats);
   $('score').textContent = `${scores.total.toLocaleString('ca')} PTS`;
+  const seconds = Math.floor(stats.elapsedSeconds || 0);
+  const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  if ($('level-time').textContent !== time) $('level-time').textContent = time;
 }
 const progress = saves.read();
 const audio = new AudioManager(); audio.muted = progress.muted;
@@ -113,6 +120,7 @@ class Menu extends Phaser.Scene {
     const resume = levels.find(l => !scores.active?.chapters[l.id]?.stats.complete) || levels[0];
     const label = document.createElement('label'); label.className = 'player-field'; label.textContent = 'Nom del jugador';
     const name = document.createElement('input'); name.id = 'player-name'; name.maxLength = 24; name.value = scores.player; name.autocomplete = 'off'; name.addEventListener('keydown', event => event.stopPropagation()); label.append(name); root.insertBefore(label, actions);
+    if (cloud.enabled) { const notice = document.createElement('small'); notice.className = 'score-consent'; notice.textContent = 'Tria un àlies: el nom i els punts de les partides es publicaran a la classificació compartida.'; root.insertBefore(notice, actions); }
     actions.append(button(progress.completed.length ? 'Continuar l’aventura →' : 'Començar l’aventura! →', () => {
       const continuing = scores.active && !scores.active.endedAt && name.value.trim() === scores.player;
       if (!continuing) scores.begin(name.value);
@@ -150,7 +158,7 @@ function finishLevel(level: Level, copy: string) {
   const heading = next ? level.id === 'baby' ? 'La teva primera aventura!' : 'Un pas més!' : 'Has arribat al nivell 10, Nel!';
   if (!next) { celebrate(); audio.playTheme('party'); }
   const showResult = () => {
-    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, `${copy} Puntuació de la partida: ${scores.total.toLocaleString('ca')} punts.`, true);
+    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, `${copy} Temps: ${Math.floor(lastStats.elapsedSeconds || 0)} s · Bonus de rapidesa: +${speedPoints({ ...lastStats, complete: true })}. Total: ${scores.total.toLocaleString('ca')} punts.`, true);
     actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
   };
   window.clearTimeout(completionTimer); completionTimer = undefined;
@@ -200,23 +208,61 @@ class Scores extends Phaser.Scene {
   constructor() { super('Scores'); }
   create() {
     playingUI(false);
-    const { root, actions } = panel('EL MARCADOR D’EN NEL', 'Puntuacions', 'Partides dels jugadors d’aquest dispositiu. Cada capítol puntua una vegada; repetir-lo permet millorar la marca.', true);
+    const { root, actions } = panel('EL MARCADOR D’EN NEL', 'Puntuacions', 'Cada capítol puntua una vegada; repetir-lo permet millorar la marca.', true);
     root.classList.add('score-panel');
+    let shared = cloud.enabled, revision = 0;
+    const tabs = document.createElement('div'); tabs.className = 'score-tabs';
+    const message = document.createElement('p'); message.className = 'score-message'; message.setAttribute('role', 'status');
     const list = document.createElement('ol'); list.className = 'score-list';
-    for (const run of scores.runs) {
+    const render = (runs: ReturnType<typeof scores.runs.slice>) => {
+    list.replaceChildren();
+    for (const run of runs) {
       const row = document.createElement('li');
       const name = document.createElement('strong'); name.textContent = run.player;
       const points = document.createElement('b'); points.textContent = `${runPoints(run).toLocaleString('ca')} PTS`;
       const detail = document.createElement('small'); detail.textContent = `${new Date(run.startedAt).toLocaleDateString('ca')} · ${Object.values(run.chapters).filter(c => c.stats.complete).length}/7 capítols · ${run.endedAt ? 'Acabada' : 'En curs'}`;
       row.append(name, points, detail); list.append(row);
     }
-    if (!scores.runs.length) { const empty = document.createElement('p'); empty.textContent = 'Encara no hi ha partides. Comença la teva aventura!'; root.insertBefore(empty, actions); }
+    if (!runs.length) message.textContent = shared ? 'Encara no hi ha puntuacions compartides. Sigues el primer!' : 'Encara no hi ha partides en aquest mòbil.';
+    };
+    const show = async (global: boolean) => {
+      shared = global; const current = ++revision;
+      globalTab.setAttribute('aria-pressed', String(shared)); localTab.setAttribute('aria-pressed', String(!shared));
+      upload.hidden = shared || !cloud.enabled; list.replaceChildren();
+      message.textContent = shared ? 'Carregant la classificació compartida…' : 'Historial d’aquest mòbil.';
+      if (!shared) { render(scores.runs); return; }
+      try {
+        await cloud.flush(); const runs = await cloud.list();
+        if (current !== revision || !root.isConnected) return;
+        message.textContent = cloud.pending ? 'Hi ha punts pendents d’enviar. Mostrem la darrera classificació disponible.' : 'Classificació compartida entre tots els jugadors.';
+        render(runs);
+      } catch { if (current === revision && root.isConnected) message.textContent = 'No s’ha pogut carregar el marcador. Torna-ho a provar o consulta «Aquest mòbil».'; }
+    };
+    const globalTab = button('Classificació compartida', () => { void show(true); }, true); globalTab.disabled = !cloud.enabled;
+    const localTab = button('Aquest mòbil', () => { void show(false); }, true);
+    tabs.append(globalTab, localTab); root.insertBefore(tabs, actions); root.insertBefore(message, actions);
     root.insertBefore(list, actions);
-    const rules = document.createElement('small'); rules.textContent = 'Estrella: +100 · turbo: +50 · obstacle esquivat: +25 · quarter: +200 · tirolina: +150 · liana: +100 · escala o gos: +100 · avançar: +25 cada 10% · capítol: +500 · ensopegada: −25.'; root.insertBefore(rules, actions);
-    actions.append(button('Descarregar puntuacions (.json)', () => {
-      const url = URL.createObjectURL(new Blob([scores.exportFile()], { type: 'application/json' }));
-      const link = document.createElement('a'); link.href = url; link.download = 'puntuacions-nel.json'; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }), button('Tornar a l’inici', returnMenu, true));
+    const rules = document.createElement('small'); rules.textContent = 'Estrella: +100 · fletxa turbo: +50 · rapidesa: fins a +1.000 en acabar cada capítol (−5 per segon de joc) · enemic o ensopegada: −25. Les pauses no compten.'; root.insertBefore(rules, actions);
+    const upload = button('Publicar partides d’aquest mòbil', () => { scores.runs.forEach(run => cloud.queue(run)); void show(true); }, true);
+    actions.append(button('Actualitzar', () => { void show(shared); }, true), button('Descarregar puntuacions (.json)', () => {
+      void (async () => {
+        try {
+          const global = shared;
+          const data = global ? JSON.stringify({ format: 'puntuacions-nel-compartides', version: 1, exportedAt: new Date().toISOString(), runs: await cloud.list() }, null, 2) : scores.exportFile();
+          const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+          const link = document.createElement('a'); link.href = url; link.download = global ? 'puntuacions-nel-compartides.json' : 'puntuacions-nel.json'; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch { message.textContent = 'No s’ha pogut descarregar el marcador compartit. Torna-ho a provar.'; }
+      })();
+    }), button('Descarregar fitxer de text (.txt)', () => {
+      void (async () => {
+        try {
+          const data = shared ? scoreText(await cloud.list()) : scores.exportText();
+          const url = URL.createObjectURL(new Blob([data], { type: 'text/plain;charset=utf-8' }));
+          const link = document.createElement('a'); link.href = url; link.download = shared ? 'puntuacions-nel-compartides.txt' : 'puntuacions-nel.txt'; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch { message.textContent = 'No s’ha pogut descarregar el fitxer. Torna-ho a provar.'; }
+      })();
+    }, true), upload, button('Tornar a l’inici', returnMenu, true));
+    void show(shared);
     if (!scores.persistent) { const notice = document.createElement('p'); notice.textContent = 'Aquest navegador no permet desar les puntuacions. Descarrega el fitxer abans de tancar la pàgina.'; root.append(notice); }
   }
 }
@@ -276,6 +322,15 @@ game = new Phaser.Game({
   }), Invitation, Pause, Scores],
 });
 $('pause').onclick = pauseGame;
+if (matchMedia('(pointer: coarse)').matches) document.querySelector('.game-bottom > div')!.prepend($('sound'));
+$('fullscreen').onclick = () => {
+  void (async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+      await (screen.orientation as ScreenOrientation & { lock?: (orientation: string) => Promise<void> }).lock?.('landscape');
+    } catch { /* Mobile browsers still get the full viewport layout. */ }
+  })();
+};
 $('invite-shortcut').onclick = showInvitation;
 function updateSound() {
   $('sound').textContent = `So: ${audio.muted ? 'no' : 'sí'}`;

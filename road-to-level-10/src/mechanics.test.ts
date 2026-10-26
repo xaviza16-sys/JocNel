@@ -10,6 +10,8 @@ describe('baby stair puzzle', () => {
     expect(canMantle(230, 200, 0)).toBe(true);
     expect(canMantle(200, 170, 0)).toBe(true);
     expect(canMantle(230, 200, 90)).toBe(false);
+    for (const block of levels[0].blocks!) expect(canMantle(230, 230 - block.height, 0, block.height + 2)).toBe(true);
+    expect(canMantle(230, 170, 90, 62)).toBe(false);
   });
   it('pushes a chain without overlap and stops at the intended stair positions', () => {
     const puzzle = new BabyPuzzle(levels[0].blocks!);

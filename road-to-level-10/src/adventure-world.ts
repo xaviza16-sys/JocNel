@@ -38,6 +38,13 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     rect(1538, 34, 5, 112, 0xe3ded5); rect(1538, 34, width - 1538, 5, 0xd6c4a9);
     rect(1538, 146, width - 1538, 84, 0xf0ede7); rect(1538, 146, width - 1538, 5, 0xc7aa81);
     scene.add.text(1490, 93, 'HABITACIÓ →', { fontFamily: 'monospace', fontSize: '7px', color: '#566558' }).setOrigin(.5).setDepth(1);
+    // One continuous oak handrail above the three compact, connected treads.
+    g.lineStyle(3, 0xc1a078).lineBetween(1313, 131, 1394, 107).lineBetween(1394, 107, 1528, 107);
+    for (const x of [1316, 1344, 1372]) {
+      const top = 162 - Math.floor((x - 1316) / 28) * 8;
+      rect(x, top - 32, 2, 32, 0xb8a994);
+    }
+    for (const x of [1402, 1452, 1502]) rect(x, 108, 2, 38, 0xb8a994);
   } else {
     if (mode === 'toddler' || forest) outdoorBackdrop(scene, forest ? 'forest-bg' : 'garden-bg', width);
     else {
@@ -92,6 +99,13 @@ export function platformArt(scene: Phaser.Scene, level: Level, p: Level['platfor
     if (p.x >= 1538) return; // The bed sprite supplies its visible mattress.
     const g = scene.add.graphics().setDepth(0);
     const left = p.x - p.width / 2;
+    if (p.x >= 1310) {
+      g.fillStyle(0xeeeae2).fillRect(left, p.y, p.width, p.height);
+      g.fillStyle(0xb59975).fillRect(left - 1, p.y, p.width + 2, 4);
+      g.fillStyle(0xe1c6a0).fillRect(left, p.y, p.width, 2);
+      g.fillStyle(0xd4c9b9).fillRect(left, p.y + 4, 2, p.height - 4);
+      return;
+    }
     g.fillStyle(0xf2f0e9).fillRect(left, p.y, p.width, p.height);
     g.fillStyle(0xd1b78f).fillRect(left, p.y, p.width, 4);
     g.lineStyle(1, 0xd6d0c5).strokeRect(left, p.y + 4, p.width, p.height - 4);

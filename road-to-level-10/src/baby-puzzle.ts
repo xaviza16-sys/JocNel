@@ -22,6 +22,6 @@ export class BabyPuzzle {
     block.x += actual; this.moved += Math.abs(actual); return actual;
   }
 }
-export function canMantle(feet: number, ledge: number, gap: number) {
-  return feet - ledge > 3 && feet - ledge <= 32.5 && gap >= -8 && gap <= 20;
+export function canMantle(feet: number, ledge: number, gap: number, reach = 32.5) {
+  return feet - ledge > 3 && feet - ledge <= reach && gap >= -8 && gap <= 20;
 }

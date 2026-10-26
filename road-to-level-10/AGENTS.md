@@ -4,7 +4,7 @@
 Build a polished, mobile-first, static-hosted HTML5 2D pixel-art birthday invitation game about Nel growing from baby to ten-year-old skateboarder. Language of all player-facing text: Catalan, as explicitly requested by the user. UI, canvas, controls, accessibility labels, invitation and RSVP copy must all be Catalan.
 
 ## Stack
-- Phaser 3, TypeScript, Vite. No server, database, analytics, ads or third-party tracking.
+- Phaser 3, TypeScript, Vite. Per the user's explicit shared-ranking request, scores use a separate Sites/D1 API; game progression stays local. No analytics, ads or third-party tracking.
 - GitHub Pages deployment using GitHub Actions; Vite `base` configurable.
 - 16:9 logical resolution 480x270, pixelArt true, nearest-neighbor scaling, FIT and CENTER_BOTH; mobile landscape preferred, with portrait rotate hint and always accessible invitation.
 - Keyboard arrows/A-D, Space and mobile touch left/right/jump. Mute toggle; user gesture before audio.
@@ -29,6 +29,8 @@ Levels defined in `src/data/levels.json`; schemas validated with TypeScript. Sto
 
 ## Engineering requirements
 - Mobile touch controls with multi-touch support; pause on blur; respect reduced motion and mute.
+- Mobile uses the entire viewport with overlaid controls, an analog direction stick, A/B actions and an optional native fullscreen/landscape button. Portrait users see a rotation hint.
+- Points come only from collected stars/turbo arrows and a completion speed bonus; enemy contacts subtract points. Active scene time excludes pauses. All movable cushions, including the double stack, are climbable; fixed high furniture still requires the push puzzles.
 - No softlocks; checkpoints, infinite retries, skip level option; full playthrough target 3–5 minutes.
 - Use clear asset credits, semantic overlay buttons, accessible contrast, alt text for non-game images.
 - Vitest unit tests for config, level transitions and enemy behaviors; Playwright smoke test for load, controls, invite link.

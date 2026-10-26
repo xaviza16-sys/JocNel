@@ -57,6 +57,7 @@ export class Skatepark extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.level.width, 270).startFollow(this.target, true, this.hooks.reducedMotion ? 1 : .16, 1, -65, 0);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#244c49', backgroundColor: '#fff0d1', padding: { x: 6, y: 5 } };
     this.hud = this.add.text(9, 9, '', style).setScrollFactor(0).setDepth(20);
+    this.hud.setVisible(!matchMedia('(pointer: coarse)').matches);
     this.hint = this.add.text(240, 43, '→ Impulsa’t · ← Frena · ESPAI Ollie · Agafa aire als quarters!', { ...style, fontSize: '8px' }).setOrigin(.5).setScrollFactor(0).setDepth(20);
     this.controls = new InputManager(this);
     const escape = this.input.keyboard!.addKey('ESC'); escape.on('down', this.hooks.pause);
@@ -92,7 +93,7 @@ export class Skatepark extends Phaser.Scene {
     this.rider.setDisplaySize(50 * this.rider.frame.realWidth / this.rider.frame.realHeight, 50).setTint(this.elapsed < this.protectedUntil ? 0xd2f1ed : 0xffffff);
     this.target.setPosition(b.x, 135);
     const pct = Math.min(100, Math.round(b.x / this.level.finish * 100));
-    this.hooks.score(this.level, { progress: pct, stars: this.collected, bumps: this.bumps, quarters: b.quarters.size });
+    this.hooks.score(this.level, { progress: pct, elapsedSeconds: this.elapsed / 1000, stars: this.collected, bumps: this.bumps, quarters: b.quarters.size });
     this.hud.setText(`QUARTERS ${b.quarters.size}/4 · ★ ${this.collected} · ${pct}%`);
     this.hint.setVisible(this.elapsed < 5000);
     document.getElementById('status')!.textContent = `SKATEPARK · ${b.quarters.size} quarters · ${b.ollies} salts · ${this.bumps} ensopegades · ${pct}%`;

@@ -42,6 +42,7 @@ export class MotoRace extends Phaser.Scene {
     this.meter = this.add.graphics().setDepth(12);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#fff3d2', backgroundColor: '#263a39', padding: { x: 6, y: 6 } };
     this.hud = this.add.text(7, 7, '', style).setDepth(12);
+    this.hud.setVisible(!matchMedia('(pointer: coarse)').matches);
     this.effect = this.add.text(473, 7, '', style).setOrigin(1, 0).setDepth(12);
     this.toast = this.add.text(240, 44, '', { ...style, color: '#203d45', backgroundColor: '#fff1bc' }).setOrigin(.5, 0).setDepth(12);
     this.controls = new InputManager(this);
@@ -134,7 +135,7 @@ export class MotoRace extends Phaser.Scene {
     for (let i = this.usedSprites; i < this.sprites.length; i++) this.sprites[i].setVisible(false);
     this.drawRider(240 + race.steering * 212);
     const pct = Math.round(race.distance / this.level.race!.length * 100);
-    this.hooks.score(this.level, { progress: pct, boosts: race.powerups, dodges: race.avoided, bumps: race.hits + race.spins });
+    this.hooks.score(this.level, { progress: pct, elapsedSeconds: this.clock / 1000, boosts: race.powerups, dodges: race.avoided, bumps: race.hits + race.spins });
     this.hud.setText(`TURBOS ${race.powerups} · CAIGUDES ${race.hits}`);
     this.effect.setText(race.spin > 0 ? 'PATINADA! ↻' : race.needsGetUp ? 'AIXECA’T ↑' : race.fall > 0 ? 'TORNANT A PUJAR' : race.slow > 0 ? 'FULLES · A POC A POC' : race.boost > 0 ? `TURBO ${race.boost.toFixed(1)}s` : `${pct}% CAP A L’ESCOLA BRESSOL`);
     this.toast.setVisible(race.distance < 45 || race.feedbackTime > 0 || race.fall > 0);

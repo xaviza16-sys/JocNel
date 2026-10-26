@@ -6,9 +6,10 @@ test('player scores survive reloads and the downloaded file includes all players
   for (const name of ['Ona Sol', 'Pau']) {
     await page.getByLabel('Nom del jugador').fill(name);
     await page.getByRole('button', { name: /Començar l’aventura/ }).click();
-    await page.keyboard.down('ArrowRight');
+    await expect(page.locator('#status')).toContainText('0 salts');
+    await page.keyboard.down('ArrowRight'); await page.keyboard.down('w');
     await expect(page.locator('#score')).not.toHaveText('0 PTS', { timeout: 6000 });
-    await page.keyboard.up('ArrowRight');
+    await page.keyboard.up('ArrowRight'); await page.keyboard.up('w');
     await page.getByRole('button', { name: 'Pausa', exact: true }).click();
     await page.getByRole('button', { name: 'Desar i acabar partida' }).click();
     await expect(page.getByRole('heading', { name: 'Puntuacions' })).toBeVisible();
@@ -27,6 +28,11 @@ test('player scores survive reloads and the downloaded file includes all players
   expect(data.format).toBe('puntuacions-nel');
   expect(data.runs.map((run: { player: string }) => run.player).sort()).toEqual(['Ona Sol', 'Pau']);
   expect(data.runs.every((run: { points: number; endedAt: string }) => run.points > 0 && run.endedAt)).toBe(true);
+  const textDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Descarregar fitxer de text (.txt)' }).click();
+  const textDownload = await textDownloadPromise;
+  expect(textDownload.suggestedFilename()).toBe('puntuacions-nel.txt');
+  expect(await readFile((await textDownload.path())!, 'utf8')).toContain('Ona Sol\t100');
 });
 
 test('mobile controller shows A and B, supports held feedback and fits landscape', async ({ browser }) => {
@@ -52,10 +58,37 @@ test('mobile controller shows A and B, supports held feedback and fits landscape
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(390);
   }
   const shell = (await page.locator('.game-shell').boundingBox())!;
+  expect(shell.x).toBe(0); expect(shell.y).toBe(0); expect(shell.width).toBe(844);
   expect(shell.y + shell.height).toBeLessThanOrEqual(390);
   await page.screenshot({ path: 'test-results/gamer-controls-landscape.png' });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('#touch-controls')).toBeVisible();
   await page.screenshot({ path: 'test-results/gamer-controls-portrait.png' });
+  await context.close();
+});
+
+test('direction stick reverses while dragging and resets on pause without interrupting A/B', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage(); await page.goto('/');
+  await page.getByRole('button', { name: /Començar l’aventura/ }).click();
+  await expect(page.locator('#status')).toContainText('0 salts');
+  const stick = page.locator('#direction-stick'), bounds = (await stick.boundingBox())!;
+  const y = bounds.y + bounds.height / 2, x = bounds.x + bounds.width / 2;
+  await stick.dispatchEvent('pointerdown', { pointerId: 21, pointerType: 'touch', clientX: x + 30, clientY: y });
+  await expect(stick).toHaveClass(/active/);
+  await expect.poll(async () => stick.evaluate(el => parseFloat((el as HTMLElement).style.getPropertyValue('--stick-x')))).toBeGreaterThan(0);
+  const percent = async () => Number((await page.locator('#status').textContent())?.match(/(\d+)%/)?.[1] || 0);
+  await expect.poll(percent).toBeGreaterThan(4);
+  const forward = await percent();
+  const climb = page.getByRole('button', { name: 'Grimpar', exact: true });
+  await climb.dispatchEvent('pointerdown', { pointerId: 22, pointerType: 'touch' });
+  await stick.dispatchEvent('pointermove', { pointerId: 21, pointerType: 'touch', clientX: x - 30, clientY: y });
+  await expect.poll(async () => stick.evaluate(el => parseFloat((el as HTMLElement).style.getPropertyValue('--stick-x')))).toBeLessThan(0);
+  await expect(climb).toHaveClass(/pressed/);
+  await expect.poll(percent).toBeLessThan(forward);
+  await page.getByRole('button', { name: 'Pausa', exact: true }).click();
+  const time = await page.locator('#level-time').textContent();
+  await expect(stick).not.toHaveClass(/active/); await expect(page.locator('[data-action="climb"]')).not.toHaveClass(/pressed/);
+  await page.waitForTimeout(1100); await expect(page.locator('#level-time')).toHaveText(time!);
   await context.close();
 });
