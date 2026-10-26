@@ -1,5 +1,15 @@
 # La moto pel passeig
 
+## Actualització de la patinada
+
+`assets/race/nel-moto-spin-v1.png` i `.webp` afegeixen vuit vistes del mateix Nel i la moto: darrere, tres quarts, laterals i davant. S’han generat amb l’eina integrada `image_gen` a partir del sprite del pilot. En tocar una caca, les vistes es recorren dues vegades amb una desacceleració del gir durant 1,6 segons; després es continua des del mateix punt. Les poses es registren a `src/race-art.ts` amb escala i línia de terra comunes.
+
+Prompt exacte:
+
+```text
+Use case: stylized-concept. Create an EIGHT-DIRECTION TURNAROUND animation sprite sheet for the EXACT SAME toddler Nel and blue toy motorcycle in the supplied rear-view reference sheet. This is a brief comedic spin-out effect, like a kart turning around its VERTICAL AXIS while wheels remain on ground. SAME short straight light-brown hair, teal/turquoise LONG SLEEVE jacket, gray/taupe trousers, pale mint/white shoes, blue small plastic ride-on motorcycle with red handles and gray steering stem, chunky black toy wheels. Match reference crisp shaded 16-bit pixel art and proportions, NOT a new character or different bike. Exactly FOUR equal columns by TWO equal rows, EIGHT full-body sprites, identical SCALE and head diameter, centered with wide transparent gutters and identical wheel ground baseline 90% cell height. Reading order around one full 360-degree turn: 1 EXACT REAR VIEW facing away; 2 rear three-quarter turning toward RIGHT; 3 exact SIDE VIEW facing RIGHT; 4 front three-quarter facing toward camera/right; 5 EXACT FRONT VIEW facing camera; 6 front three-quarter toward camera/LEFT; 7 exact SIDE VIEW facing LEFT; 8 rear three-quarter toward LEFT leading naturally back to frame1. The boy stays SEATED on toy with hands on grips and feet near ground in every frame, no crash, no fall, no forward walking. Front face is friendly surprised round toddler face with large brown eyes and short brown fringe, same age and clothes. Vehicle and child rotate together, tires keep contact with same baseline. Whole subject inside every cell. TRUE transparent alpha background, no scenery, no text, no arrows, no speed lines, no floor, no shadows outside outline, no sparkles, no props, no panels. Do not merely mirror identical rear views: the front and side views must truly reveal the corresponding bike and face direction.
+```
+
 El tercer nivell es basa en la fotografia d’en Nel conduint la moto pel passeig. Els recursos s’han generat amb l’eina integrada `image_gen`; la fotografia original no s’ha copiat al repositori. No es reprodueix cap adreça ni cartell identificable.
 
 ## Fitxers generats
@@ -13,7 +23,7 @@ El tercer nivell es basa en la fotografia d’en Nel conduint la moto pel passei
 - Les úniques icones beneficioses són les fletxes planes del terra: acceleren durant 1,8 segons. No hi ha escuts, imants, estrelles, monedes ni fotos dins d’aquest nivell.
 - Les piles de fulles redueixen la velocitat durant 1,8 segons i cancel·len el turbo. Una fletxa pot treure la lentitud.
 - Les famílies provoquen una caiguda suau, sense fer mal als vianants. S’atura el desplaçament i es mostra la caiguda. Cal prémer ESPAI o el botó tàctil «Aixecar-se» per recuperar la moto; després hi ha un breu marge de protecció contra altres topades amb persones.
-- Una caca atura el recorregut sense possibilitat de continuar avançant. El panell ofereix «Tornar a començar» des de zero o triar un altre capítol. No es desa el nivell com a completat.
+- Una caca provoca una patinada de 1,6 segons: la moto fa dues voltes sobre l’eix vertical, perd el turbo i recupera el control automàticament. Durant la patinada no avança ni gira de carril; després continua des del mateix punt, sense reiniciar ni perdre els turbos recollits. Amb moviment reduït es mostra una inclinació fixa en lloc de les voltes.
 - La protecció posterior a una caiguda no evita les caques. No hi ha carrils bloquejats alhora: sempre es poden esquivar els obstacles.
 - Pausa, invitació, moviment reduït, controls tàctils i intents il·limitats continuen disponibles.
 

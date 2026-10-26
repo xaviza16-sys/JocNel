@@ -148,11 +148,6 @@ function celebrate() {
   }
   shell.append(confetti); window.setTimeout(() => confetti.remove(), 4800);
 }
-function restartStoppedRace(level: Level) {
-  playingUI(false);
-  const { actions } = panel('LA MOTO S’HA QUEDAT ATURADA', 'Una caca de gos!', 'Has trepitjat una caca de gos. Cal tornar a començar el recorregut. Aquest cop, esquiva-la!', true);
-  actions.append(button('Tornar a començar →', () => startLevel(level)), button('Triar capítol', () => { game.scene.stop('MotoRace'); game.scene.start('LevelSelect'); }, true));
-}
 function pauseGame() {
   if (!game.scene.isActive(gameplayKey())) return;
   const scene = gameplay();
@@ -223,7 +218,7 @@ game = new Phaser.Game({
     audio, reducedMotion, pause: pauseGame, complete: finishLevel,
     begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
   }), new MotoRace({
-    audio, reducedMotion, pause: pauseGame, complete: finishLevel, blocked: restartStoppedRace,
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
     begin: level => {
       overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint;
     },

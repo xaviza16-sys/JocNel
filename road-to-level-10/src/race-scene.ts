@@ -1,12 +1,11 @@
 import Phaser from 'phaser';
 import { InputManager, type AudioManager } from './systems';
-import { RaceController, FALL_SECONDS, type RoadKind } from './race-model';
+import { RaceController, FALL_SECONDS, SPIN_SECONDS, type RoadKind } from './race-model';
 import type { Level } from './model';
 
 interface RaceHooks {
   begin: (level: Level) => void;
   complete: (level: Level, copy: string) => void;
-  blocked: (level: Level) => void;
   pause: () => void;
   audio: AudioManager;
   reducedMotion: boolean;
@@ -53,8 +52,7 @@ export class MotoRace extends Phaser.Scene {
     const contacts = this.race.step(delta / 1000, this.controls.axis(), this.controls.jumpPressed());
     contacts.forEach(kind => kind === 'boost' ? this.hooks.audio.chime(880) : this.hooks.audio.sfx('hit'));
     this.paint();
-    if (this.race.blocked) { this.controls.reset(); this.scene.pause(); this.hooks.blocked(this.level); }
-    else if (this.race.finished) this.complete();
+    if (this.race.finished) this.complete();
   }
   complete() {
     this.finished = true; this.scene.pause();
@@ -134,13 +132,13 @@ export class MotoRace extends Phaser.Scene {
     this.drawRider(240 + race.steering * 212);
     const pct = Math.round(race.distance / this.level.race!.length * 100);
     this.hud.setText(`TURBOS ${race.powerups} · CAIGUDES ${race.hits}`);
-    this.effect.setText(race.blocked ? 'MOTO ATURADA' : race.needsGetUp ? 'AIXECA’T ↑' : race.fall > 0 ? 'TORNANT A PUJAR' : race.slow > 0 ? 'FULLES · A POC A POC' : race.boost > 0 ? `TURBO ${race.boost.toFixed(1)}s` : `${pct}% CAP A L’ESCOLA BRESSOL`);
+    this.effect.setText(race.spin > 0 ? 'PATINADA! ↻' : race.needsGetUp ? 'AIXECA’T ↑' : race.fall > 0 ? 'TORNANT A PUJAR' : race.slow > 0 ? 'FULLES · A POC A POC' : race.boost > 0 ? `TURBO ${race.boost.toFixed(1)}s` : `${pct}% CAP A L’ESCOLA BRESSOL`);
     this.toast.setVisible(race.distance < 45 || race.feedbackTime > 0 || race.fall > 0);
     this.toast.setText(race.needsGetUp ? 'Prem ESPAI o AIXECAR-SE per tornar a la moto' : race.feedbackTime > 0 ? race.feedback : '← → Condueix · Les fletxes del terra donen turbo');
     this.meter.clear().fillStyle(0x263a39).fillRect(7, 33, 125, 3).fillStyle(0xf3c969).fillRect(7, 33, 125 * race.distance / this.level.race!.length, 3);
     const action = document.querySelector<HTMLButtonElement>('[data-action="jump"]')!;
-    action.hidden = race.fall === 0 || race.blocked; action.textContent = 'AIXECAR-SE ↑'; action.setAttribute('aria-label', 'Aixecar-se');
-    document.getElementById('status')!.textContent = `${race.powerups} potenciadors · ${race.hits} caigudes · ${race.avoided} obstacles esquivats · ${pct}% del camí${race.fall > 0 ? ' · CAIGUT' : ''}${race.slow > 0 ? ' · FULLES' : ''}${race.blocked ? ' · ATURAT' : ''}`;
+    action.hidden = race.fall === 0; action.textContent = 'AIXECAR-SE ↑'; action.setAttribute('aria-label', 'Aixecar-se');
+    document.getElementById('status')!.textContent = `${race.powerups} potenciadors · ${race.hits} caigudes · ${race.spins} patinades · ${race.avoided} obstacles esquivats · ${pct}% del camí${race.fall > 0 ? ' · CAIGUT' : ''}${race.slow > 0 ? ' · FULLES' : ''}${race.spin > 0 ? ' · PATINANT' : ''}`;
   }
   private drawItem(kind: RoadKind, x: number, y: number, s: number) {
     const frame = kind === 'family' ? `family-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 150) % 8}` : kind;
@@ -150,14 +148,27 @@ export class MotoRace extends Phaser.Scene {
     const race = this.race, g = this.effects, axis = this.controls.axis();
     let frame = this.hooks.reducedMotion ? 'ride-0' : `ride-${Math.floor(this.clock / 100) % 8}`;
     if (axis) frame = axis < 0 ? 'left' : 'right';
-    if (race.blocked) frame = 'upright';
+    if (race.spin > 0) frame = 'upright';
     if (race.fall > 0) {
       const elapsed = FALL_SECONDS - race.fall;
       frame = elapsed < .3 ? 'fall-0' : elapsed < .65 ? 'fall-1' : elapsed < 1.2 ? 'fallen' : elapsed < 1.85 ? 'rise-0' : elapsed < 2.5 ? 'rise-1' : 'upright';
       if (race.needsGetUp || this.hooks.reducedMotion) frame = 'fallen';
     }
-    this.rider.setFrame(frame).setPosition(Math.round(x), 261);
+    const progress = race.spin > 0 ? 1 - race.spin / SPIN_SECONDS : 0;
+    const rotation = 1 - (1 - progress) ** 2;
+    if (race.spin > 0) this.rider.setTexture('race-spin', `spin-${this.hooks.reducedMotion ? 0 : Math.floor(rotation * 16) % 8}`);
+    else this.rider.setTexture('race-rider', frame);
+    this.rider.setPosition(Math.round(x), 261).setAngle(0).setFlipX(false);
     this.rider.setDisplaySize(88 * this.rider.frame.realWidth / this.rider.frame.realHeight, 88);
+    if (race.spin > 0) {
+      if (!this.hooks.reducedMotion) {
+        // Eight actual views show two complete turns around the vertical axis.
+        // The small skid offset never changes the physical road lane.
+        const angle = rotation * Math.PI * 4;
+        this.rider.setX(x + Math.sin(angle) * 9).setY(261 - Math.sin(progress * Math.PI) * 3).setAngle(Math.sin(angle) * 5);
+        g.lineStyle(1, 0xa78654, .75).strokeEllipse(x, 255, 65, 9);
+      } else this.rider.setAngle(5);
+    }
     if (race.boost > 0 && !this.hooks.reducedMotion) {
       g.lineStyle(2, 0xffe4a2, .9);
       for (const side of [-1, 1]) for (let i = 0; i < 3; i++) g.lineBetween(x + side * (28 + i * 6), 228 + i * 4, x + side * (32 + i * 8), 258);

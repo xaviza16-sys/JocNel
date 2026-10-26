@@ -17,7 +17,7 @@ A PowerShell, fes servir `npm.cmd` si es bloqueja `npm.ps1`. Obre l’adreça qu
 
 1. **On és la mama? (0–1):** en Nel gateja i grimpa; no salta. Empeny blocs per formar escales i passa per damunt del gos estirat abans d’arribar a la mama.
 2. **Les primeres passes (1–2):** caminar i saltar per les plataformes de casa i del jardí.
-3. **Cap a l’escola bressol (2–4):** moto amb vista posterior pel passeig de la foto. Les fletxes acceleren, les fulles alenteixen, les famílies fan caure i cal aixecar-se; les caques aturen la moto i obliguen a reiniciar.
+3. **Cap a l’escola bressol (2–4):** moto amb vista posterior pel passeig de la foto. Les fletxes acceleren, les fulles alenteixen, les famílies fan caure i cal aixecar-se; les caques fan patinar i donar voltes abans de recuperar el control automàticament.
 4. **Un pati ple de sorpreses (4–6):** esquivar el Iogurt Mutant i el Tomàquet Furiós, sense atacs.
 5. **Surf de neu (6–7):** una baixada amb pendent, acceleració, frenada i salts.
 6. **Aventura entre les capçades (7–9):** grimpar arbres, travessar una tirolina i saltar entre dues lianes.

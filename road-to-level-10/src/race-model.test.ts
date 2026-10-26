@@ -4,7 +4,7 @@ import { levels } from './model';
 
 const config = (events: RaceConfig['events']): RaceConfig => ({ length: 200, speed: 20, events });
 const advance = (race: RaceController, target: number, axis = 0, getUp = false) => {
-  for (let i = 0; race.distance < target && i < 5000 && !race.blocked; i++) race.step(.05, axis, getUp);
+  for (let i = 0; race.distance < target && i < 5000; i++) race.step(.05, axis, getUp);
 };
 
 describe('promenade motorcycle race', () => {
@@ -28,7 +28,7 @@ describe('promenade motorcycle race', () => {
   });
   it('slows on leaves, cancels turbo and recovers normal speed without restarting', () => {
     const race = new RaceController(config([{ distance: 1, lane: 0, kind: 'boost' }, { distance: 4, lane: 0, kind: 'leaves' }]));
-    advance(race, 5); expect(race.boost).toBe(0); expect(race.speed).toBe(9); expect(race.blocked).toBe(false);
+    advance(race, 5); expect(race.boost).toBe(0); expect(race.speed).toBe(9); expect(race.spin).toBe(0);
     advance(race, 40); expect(race.speed).toBe(20); expect(race.hits).toBe(0);
   });
   it('lets arrows clear an active leaf slowdown', () => {
@@ -44,16 +44,17 @@ describe('promenade motorcycle race', () => {
     for (let i = 0; i < 45; i++) race.step(.05, 0);
     expect(race.fall).toBe(0); expect(race.distance).toBeGreaterThan(at); expect(race.grace).toBeGreaterThan(0);
   });
-  it('poop stops the run indefinitely and only a new run resets progress', () => {
-    const route = config([{ distance: 5, lane: 0, kind: 'poop' }]); const race = new RaceController(route);
-    advance(race, 20); expect(race.distance).toBe(5); expect(race.blocked).toBe(true); expect(race.finished).toBe(false);
-    for (let i = 0; i < 100; i++) race.step(.1, 1, true);
-    expect(race.distance).toBe(5); expect(race.speed).toBe(0);
-    const restarted = new RaceController(route); expect(restarted.distance).toBe(0); expect(restarted.resolved.size).toBe(0); expect(restarted.blocked).toBe(false);
+  it('spins on poop, briefly locks steering and resumes without losing progress', () => {
+    const race = new RaceController(config([{ distance: 1, lane: 0, kind: 'boost' }, { distance: 5, lane: 0, kind: 'poop' }]));
+    advance(race, 5); expect(race.spin).toBeGreaterThan(0); expect(race.spins).toBe(1); expect(race.boost).toBe(0);
+    for (let i = 0; i < 20; i++) race.step(.05, 1, true);
+    expect(race.distance).toBe(5); expect(race.steering).toBe(0); expect(race.speed).toBe(0);
+    advance(race, 30); expect(race.spin).toBe(0); expect(race.speed).toBe(20); expect(race.powerups).toBe(1); expect(race.spins).toBe(1);
+    advance(race, 200); expect(race.finished).toBe(true);
   });
   it('recovery grace never protects against poop', () => {
     const race = new RaceController(config([{ distance: 1, lane: 0, kind: 'family' }, { distance: 3, lane: 0, kind: 'poop' }]));
-    advance(race, 10, 0, true); expect(race.blocked).toBe(true); expect(race.grace).toBeGreaterThan(0);
+    advance(race, 10, 0, true); expect(race.spins).toBe(1); expect(race.distance).toBeGreaterThanOrEqual(10);
   });
   it('avoids off-lane hazards and completes without granting old collectibles', () => {
     const race = new RaceController(config([{ distance: 5, lane: 1, kind: 'family' }, { distance: 10, lane: -1, kind: 'poop' }, { distance: 15, lane: 1, kind: 'leaves' }]));

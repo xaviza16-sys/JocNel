@@ -153,7 +153,7 @@ test('plays all seven chapters with real input and reveals the final invitation'
   expect(errors).toEqual([]);
 });
 
-test('motorcycle leaves slow down, pedestrians require getting up, and poop requires restarting on mobile', async ({ browser }) => {
+test('motorcycle leaves slow down, pedestrians require getting up, and poop spins then resumes on mobile', async ({ browser }) => {
   test.setTimeout(45000);
   const context = await browser.newContext({ viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
@@ -169,16 +169,20 @@ test('motorcycle leaves slow down, pedestrians require getting up, and poop requ
   await page.screenshot({ path: 'test-results/promenade-fallen-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Aixecar-se', exact: true }).tap();
   await expect(page.locator('#status')).not.toContainText('CAIGUT', { timeout: 4000 });
-  await expect(page.getByRole('heading', { name: 'Una caca de gos!' })).toBeVisible({ timeout: 8000 });
-  const stopped = await page.locator('#status').innerText();
-  await page.waitForTimeout(400); await expect(page.locator('#status')).toHaveText(stopped);
-  await page.screenshot({ path: 'test-results/promenade-restart-mobile.png', fullPage: true });
+  await expect(page.locator('#status')).toContainText('PATINANT', { timeout: 8000 });
+  const spinning = await page.locator('#status').innerText();
+  await page.waitForTimeout(350); await expect(page.locator('#status')).toHaveText(spinning);
+  await expect(page.getByRole('button', { name: 'Tornar a començar →' })).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/promenade-spin-mobile.png', fullPage: true });
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('road-to-10-v1') || '{}'));
   expect(save.completed || []).not.toContain('moto');
-  await page.getByRole('button', { name: 'Tornar a començar →' }).tap();
-  await expect(page.locator('#status')).toContainText('0 potenciadors');
-  await expect(page.locator('#status')).toContainText('0 caigudes');
-  await expect(page.locator('#status')).toContainText('0%');
+  await expect(page.locator('#status')).not.toContainText('PATINANT', { timeout: 2500 });
+  await page.waitForTimeout(500);
+  await expect(page.locator('#status')).toContainText('1 potenciadors');
+  await expect(page.locator('#status')).toContainText('1 caigudes');
+  await expect(page.locator('#status')).toContainText('1 patinades');
+  const after = Number((await page.locator('#status').innerText()).match(/(\d+)%/)?.[1]);
+  expect(after).toBeGreaterThan(Number(spinning.match(/(\d+)%/)?.[1]));
   expect(errors).toEqual([]); await context.close();
 });
 

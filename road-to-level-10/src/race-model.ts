@@ -3,6 +3,7 @@ export interface RoadEvent { distance: number; lane: -1 | 0 | 1; kind: RoadKind 
 export interface RaceConfig { length: number; speed: number; events: RoadEvent[] }
 export const roadKinds: RoadKind[] = ['family', 'leaves', 'poop', 'boost'];
 export const FALL_SECONDS = 2.8;
+export const SPIN_SECONDS = 1.6;
 
 export function validRace(value: RaceConfig | undefined): boolean {
   return !!value && Number.isFinite(value.length) && value.length >= 200
@@ -24,18 +25,24 @@ export class RaceController {
   slow = 0;
   fall = 0;
   gettingUp = false;
-  blocked = false;
+  spin = 0;
+  spins = 0;
   resolved = new Set<number>();
   feedback = '';
   feedbackTime = 0;
   constructor(readonly config: RaceConfig) {}
-  get finished() { return !this.blocked && this.fall === 0 && this.distance >= this.config.length; }
-  get speed() { return this.blocked || this.fall > 0 ? 0 : this.config.speed * (this.slow > 0 ? .45 : this.boost > 0 ? 1.65 : 1); }
+  get finished() { return this.spin === 0 && this.fall === 0 && this.distance >= this.config.length; }
+  get speed() { return this.spin > 0 || this.fall > 0 ? 0 : this.config.speed * (this.slow > 0 ? .45 : this.boost > 0 ? 1.65 : 1); }
   get needsGetUp() { return this.fall > 0 && this.fall <= 1.9 && !this.gettingUp; }
   step(seconds: number, axis: number, getUp = false): RoadKind[] {
-    if (this.finished || this.blocked) return [];
+    if (this.finished) return [];
     const dt = Math.max(0, Math.min(seconds, .1));
     for (const key of ['boost', 'grace', 'slow', 'feedbackTime'] as const) this[key] = Math.max(0, this[key] - dt);
+    if (this.spin > 0) {
+      this.spin = Math.max(0, this.spin - dt);
+      if (this.spin === 0) { this.grace = Math.max(this.grace, 1); this.message('Ja tornes a tenir el control! Som-hi!'); }
+      return [];
+    }
     if (this.fall > 0) {
       if (getUp) this.gettingUp = true;
       if (this.gettingUp) this.fall = Math.max(0, this.fall - dt);
@@ -65,8 +72,8 @@ export class RaceController {
         this.distance = event.distance; this.message('Ui! Hem caigut. Ara ens aixequem!');
         break;
       } else {
-        this.blocked = true; this.boost = this.slow = 0; this.distance = event.distance;
-        this.message('Una caca de gos! Cal tornar a començar.'); break;
+        this.spin = SPIN_SECONDS; this.spins++; this.boost = this.slow = 0; this.distance = event.distance;
+        this.message('Una caca de gos! La moto patina i dona voltes!'); break;
       }
     }
     return contacts;
