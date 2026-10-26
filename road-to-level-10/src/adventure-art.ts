@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { silhouetteBounds } from './sprite-bounds';
 import actorsUrl from '../assets/adventure/evolution-v2.webp';
 import enemiesUrl from '../assets/adventure/enemies-v1.webp';
 import worldsUrl from '../assets/adventure/worlds-v1.webp';
@@ -12,6 +13,9 @@ import toddlerUrl from '../assets/adventure/toddler-nel-v1.webp';
 import parkedMotoUrl from '../assets/adventure/toy-moto-parked-v1.webp';
 import hospitalUrl from '../assets/adventure/hospital-family-v1.webp';
 import corridorUrl from '../assets/adventure/hospital-corridor-v1.webp';
+import homeUrl from '../assets/adventure/home-bedroom-v1.webp';
+import toddlerWalkUrl from '../assets/adventure/toddler-walk-v2.webp';
+import hospitalWalkUrl from '../assets/adventure/hospital-walk-v2.webp';
 
 export const actorRows = ['baby', 'toddler', 'child', 'snow', 'explorer', 'skater'] as const;
 export const propFrames = ['bookshelf', 'cushions', 'tree', 'school', 'fir', 'cabin', 'boulder', 'bridge', 'ladder', 'lookout', 'ramp', 'bench', 'grass-tile', 'snow-tile', 'city-tile', 'party'];
@@ -27,6 +31,9 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('toy-moto', parkedMotoUrl);
   scene.load.image('hospital', hospitalUrl);
   scene.load.image('hospital-corridor', corridorUrl);
+  scene.load.image('home', homeUrl);
+  scene.load.image('toddler-walk', toddlerWalkUrl);
+  scene.load.image('hospital-walk', hospitalWalkUrl);
 }
 
 export function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
@@ -42,6 +49,9 @@ export function register(scene: Phaser.Scene, key: string, frames: string[], col
     const rightEdge = key === 'worlds' && name === 'tree' ? .717 : columnEdges?.[col + 1] ?? (col + 1) / columns;
     const x1 = Math.round(rightEdge * source.width);
     const y0 = Math.round((rowEdges?.[row] ?? row / rows) * source.height), y1 = Math.round((rowEdges?.[row + 1] ?? (row + 1) / rows) * source.height);
+    if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home', 'race-rider', 'race-spin', 'heroes'].includes(key)) {
+      return { name, ...silhouetteBounds(data, canvas.width, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }) };
+    }
     let l = x1, r = x0, t = y1, b = y0;
     for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
       if (data[(y * source.width + x) * 4 + 3] < 150) continue;
@@ -74,6 +84,11 @@ export function createAdventureFrames(scene: Phaser.Scene) {
   register(scene, 'hospital', ['walk-0', 'walk-1', 'walk-2', 'walk-3', 'idle', 'jump', 'land', 'wave'], 4, 2, [0, .25, .5], undefined, true);
   register(scene, 'hospital', ['doctor-0', 'doctor-1', 'nurse-0', 'nurse-1'], 4, 1, [.5, .75], undefined, true);
   register(scene, 'hospital', ['bed', 'bed-smile', 'door', 'trolley'], 4, 1, [.75, 1]);
+  register(scene, 'home', ['bed-wait', 'bed-hug'], 2, 1, [0, .537], [0, .531, 1]);
+  register(scene, 'home', ['shelf', 'sofa'], 2, 1, [.537, 1], [0, .455, 1]);
+  const walkFrames = Array.from({ length: 8 }, (_, i) => `walk-${i}`);
+  register(scene, 'toddler-walk', walkFrames, 4, 2, undefined, undefined, true);
+  register(scene, 'hospital-walk', walkFrames, 4, 2, undefined, undefined, true);
 }
 
 export function prop(scene: Phaser.Scene, frame: string, x: number, bottom: number, width: number, depth = 1) {

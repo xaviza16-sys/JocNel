@@ -5,11 +5,11 @@
     "subtitle": "0–1 anys · En Nel busca la mama",
     "mode": "baby",
     "ageMin": 0,
-    "width": 1400,
+    "width": 1820,
     "spawn": 64,
-    "finish": 1250,
-    "goalY": 140,
-    "hint": "← → Gateja · ↑ Grimpa · ESPAI + direcció empeny els blocs. Passa per damunt del gos i arriba a la mama.",
+    "finish": 1660,
+    "goalY": 116,
+    "hint": "← → Gateja · ↑ Grimpa · ESPAI + direcció empeny els blocs. Passa el gos, puja les escales i grimpa al llit de la mama.",
     "stars": [
       {
         "x": 235,
@@ -30,6 +30,14 @@
       {
         "x": 1120,
         "y": 116
+      },
+      {
+        "x": 1420,
+        "y": 113
+      },
+      {
+        "x": 1630,
+        "y": 89
       }
     ],
     "checkpoints": [
@@ -51,9 +59,39 @@
       },
       {
         "x": 1210,
-        "y": 140,
+        "y": 170,
         "width": 200,
-        "height": 90
+        "height": 60
+      },
+      {
+        "x": 1332,
+        "y": 162,
+        "width": 44,
+        "height": 68
+      },
+      {
+        "x": 1376,
+        "y": 154,
+        "width": 44,
+        "height": 76
+      },
+      {
+        "x": 1420,
+        "y": 146,
+        "width": 44,
+        "height": 84
+      },
+      {
+        "x": 1490,
+        "y": 146,
+        "width": 96,
+        "height": 84
+      },
+      {
+        "x": 1624,
+        "y": 116,
+        "width": 172,
+        "height": 30
       }
     ],
     "enemies": [],

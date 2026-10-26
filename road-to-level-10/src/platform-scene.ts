@@ -10,7 +10,7 @@ import { toddlerAnimationFrame } from './toddler-animation';
 import { zipPose, vinePose, nextSwingAngle } from './traversal';
 
 interface Hooks { begin: (level: Level) => void; complete: (level: Level, copy: string) => void; pause: () => void; audio: AudioManager; reducedMotion: boolean }
-interface Enemy { body: Phaser.Physics.Arcade.Image; art: Phaser.GameObjects.Image; kind: EnemyKind; anchor: number; range: number; direction: number; phase: number; lastJump: number }
+interface Enemy { body: Phaser.Physics.Arcade.Image; art: Phaser.GameObjects.Image; kind: EnemyKind; anchor: number; range: number; direction: number; phase: number; lastJump: number; distance: number; lastX: number }
 
 export class PlatformLevel extends Phaser.Scene {
   level!: Level;
@@ -60,6 +60,9 @@ export class PlatformLevel extends Phaser.Scene {
   private toddlerAirSince = 0;
   private toddlerLandedAt = -Infinity;
   private discoveryTimer?: number;
+  private hospitalDistance = 0;
+  private hospitalLastX = 0;
+  private hospitalFacingLeft = false;
   constructor(private hooks: Hooks) { super('PlatformLevel'); }
   init(data: { level: Level }) {
     this.level = data.level; this.finished = false; this.collected = 0; this.clock = 0; this.checkpoint = data.level.spawn;
@@ -70,6 +73,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.zipped.clear(); this.swung.clear(); this.grabAfter = this.momentumUntil = this.lastPushSound = 0; this.mother = undefined;
     this.dogArt = undefined; this.dogMounted = this.dogCrossed = false;
     this.hospitalBed = undefined;
+    this.hospitalDistance = 0; this.hospitalLastX = data.level.spawn; this.hospitalFacingLeft = false;
     this.babyDistance = 0; this.babyLastX = data.level.spawn; this.babyFacingLeft = false;
     this.toddlerDistance = 0; this.toddlerLastX = data.level.spawn; this.toddlerFacingLeft = this.toddlerWasAirborne = false;
     this.toddlerAirSince = 0; this.toddlerLandedAt = -Infinity;
@@ -126,7 +130,7 @@ export class PlatformLevel extends Phaser.Scene {
       const frame = ['ball', 'snowball'].includes(spawn.kind) ? spawn.kind : `${spawn.kind}-0`;
       if (staff) (body.body as Phaser.Physics.Arcade.Body).setSize(18, 44);
       const art = this.add.image(spawn.x, 230, staff ? 'hospital' : 'foods', frame).setOrigin(.5, 1).setDepth(5);
-      this.hazards.push({ body, art, kind: spawn.kind, anchor: spawn.x, range: spawn.range, direction: -1, phase: i * 670, lastJump: -9999 });
+      this.hazards.push({ body, art, kind: spawn.kind, anchor: spawn.x, range: spawn.range, direction: -1, phase: i * 670, lastJump: -9999, distance: 0, lastX: spawn.x });
     });
     this.physics.add.collider(enemies, floor); this.physics.add.collider(enemies, platforms);
     this.physics.add.overlap(this.player, enemies, () => this.retry());
@@ -147,8 +151,8 @@ export class PlatformLevel extends Phaser.Scene {
       }
     });
     if (this.level.mode === 'baby') {
-      this.mother = this.add.image(this.level.finish + 10, this.level.goalY, 'family', 'mother').setOrigin(.5, 1).setDepth(5);
-      this.mother.setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
+      this.mother = this.add.image(1624, 146, 'home', 'bed-wait').setOrigin(.5, 1).setDepth(5);
+      this.mother.setDisplaySize(172, 172 * this.mother.frame.height / this.mother.frame.width);
     } else if (this.level.mode === 'toddler') {
       const moto = this.add.image(this.level.finish + 15, this.level.goalY, 'toy-moto', 'parked').setOrigin(.5, 1).setDepth(5);
       moto.setDisplaySize(60, 60 * moto.frame.height / moto.frame.width);
@@ -234,7 +238,7 @@ export class PlatformLevel extends Phaser.Scene {
       this.hero.setDisplaySize(50 * this.hero.frame.realWidth / this.hero.frame.realHeight, 50);
     } else if (this.level.mode === 'toddler') {
       const travelled = Math.abs(this.player.x - this.toddlerLastX);
-      if (travelled < 20) this.toddlerDistance += travelled;
+      if (!airborne && travelled < 20) this.toddlerDistance += travelled;
       this.toddlerLastX = this.player.x;
       if (axis) this.toddlerFacingLeft = axis < 0;
       if (airborne && !this.toddlerWasAirborne) this.toddlerAirSince = this.clock;
@@ -243,11 +247,16 @@ export class PlatformLevel extends Phaser.Scene {
       const pose = toddlerAnimationFrame({ distance: this.toddlerDistance, time: this.clock,
         moving: travelled > .01, airborne, vy: body.velocity.y, airTime: this.clock - this.toddlerAirSince,
         landingAge: this.clock - this.toddlerLandedAt, reducedMotion: this.hooks.reducedMotion });
-      this.hero.setTexture('toddler-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.toddlerFacingLeft);
+      this.hero.setTexture(pose.startsWith('walk-') ? 'toddler-walk' : 'toddler-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.toddlerFacingLeft);
       this.hero.setDisplaySize(48 * this.hero.frame.realWidth / this.hero.frame.realHeight, 48);
     } else if (this.level.mode === 'hospital') {
-      const pose = airborne ? 'jump' : axis ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 120) % 4}` : 'idle';
-      this.hero.setTexture('hospital', pose).setPosition(this.player.x, body.bottom).setFlipX(axis < 0);
+      const travelled = Math.abs(this.player.x - this.hospitalLastX);
+      if (!airborne && travelled < 20) this.hospitalDistance += travelled;
+      this.hospitalLastX = this.player.x;
+      if (axis) this.hospitalFacingLeft = axis < 0;
+      const moving = travelled > .01 && !!axis;
+      const pose = airborne ? 'jump' : moving ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.hospitalDistance / 17) % 8}` : 'idle';
+      this.hero.setTexture(pose.startsWith('walk-') ? 'hospital-walk' : 'hospital', pose).setPosition(this.player.x, body.bottom).setFlipX(this.hospitalFacingLeft);
       this.hero.setDisplaySize(44 * this.hero.frame.realWidth / this.hero.frame.realHeight, 44);
     } else {
       const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
@@ -271,7 +280,8 @@ export class PlatformLevel extends Phaser.Scene {
       enemy.body.setVelocityX(intent.vx);
       if (intent.jump && eb.blocked.down && this.clock - enemy.lastJump > 800) { enemy.body.setVelocityY(enemy.kind === 'pepper' ? -230 : -165); enemy.lastJump = this.clock; }
       const staff = enemy.kind === 'doctor' || enemy.kind === 'nurse';
-      const animation = staff ? this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 180) % 2 : intent.warn ? 1 : !eb.blocked.down ? 3 : 1 + Math.floor(this.clock / 160) % 2;
+      enemy.distance += Math.abs(enemy.body.x - enemy.lastX); enemy.lastX = enemy.body.x;
+      const animation = staff ? this.hooks.reducedMotion ? 0 : Math.floor(enemy.distance / 12) % 2 : intent.warn ? 1 : !eb.blocked.down ? 3 : 1 + Math.floor(this.clock / 160) % 2;
       enemy.art.setFrame(['ball', 'snowball'].includes(enemy.kind) ? enemy.kind : `${enemy.kind}-${animation}`);
       enemy.art.setPosition(enemy.body.x, eb.bottom).setFlipX(staff ? enemy.direction < 0 : enemy.direction > 0).setTint(intent.warn ? 0xffd59b : 0xffffff);
       const h = staff ? 58 : ['ball', 'snowball'].includes(enemy.kind) ? 21 : 29;
@@ -378,7 +388,7 @@ export class PlatformLevel extends Phaser.Scene {
     }
     if (this.mother) {
       this.hero.setVisible(false); this.hint.setVisible(false); this.note.setText('AMB LA MAMA ♡');
-      this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
+      this.mother.setFrame('bed-hug').setDisplaySize(172, 172 * this.mother.frame.height / this.mother.frame.width);
     }
     if (this.level.mode === 'toddler') {
       this.hint.setVisible(false); this.note.setText('HAS TROBAT LA MOTO!');

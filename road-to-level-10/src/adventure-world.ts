@@ -7,7 +7,8 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
   if (mode === 'hospital') {
     // One world-space corridor: decoration and floor never drift apart.
     for (let x = 0; x < width; x += 480) {
-      scene.add.image(x, 0, 'hospital-corridor').setOrigin(0).setDisplaySize(480, 270).setDepth(-4);
+      // Adjacent sections share the same edge pixels, including floor lines.
+      scene.add.image(x, 0, 'hospital-corridor').setOrigin(0).setDisplaySize(480, 270).setFlipX((x / 480) % 2 === 1).setDepth(-4);
     }
     for (const x of [400, 950, 1280]) {
       const trolley = scene.add.image(x, 230, 'hospital', 'trolley').setOrigin(.5, 1).setDepth(-1);
@@ -20,15 +21,22 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
   const g = scene.add.graphics().setDepth(-4);
   const rect = (x: number, y: number, w: number, h: number, c: number) => g.fillStyle(c).fillRect(x, y, w, h);
   const snowy = mode === 'snow', inside = mode === 'baby', forest = mode === 'nature';
-  rect(0, 0, width, 270, inside ? 0xf0dfbc : snowy ? 0xc6e8f0 : forest ? 0xb3d2b2 : 0xb5dcdd);
+  rect(0, 0, width, 270, inside ? 0xfaf9f5 : snowy ? 0xc6e8f0 : forest ? 0xb3d2b2 : 0xb5dcdd);
   if (inside) {
-    for (let x = 0; x < width; x += 24) rect(x, 0, 2, 225, 0xe4cfab);
-    rect(0, 185, width, 43, 0xb5c6a9);
-    for (let x = 100; x < width; x += 340) {
-      rect(x - 3, 35, 94, 103, 0xbe9672); rect(x + 3, 41, 82, 90, 0xb2d9d8);
-      rect(x + 41, 41, 4, 90, 0xffeed1); rect(x + 3, 82, 82, 4, 0xffeed1);
-      prop(scene, 'bookshelf', x + 180, 230, 90, -2);
+    rect(0, 222, width, 8, 0xe2d6c4);
+    for (const x of [85, 710, 1450]) {
+      rect(x, 46, 90, 95, 0xe4dfd4); rect(x + 4, 50, 82, 87, 0xcce6e7);
+      rect(x + 43, 50, 3, 87, 0xffffff); rect(x + 4, 92, 82, 3, 0xffffff);
+      rect(x - 5, 139, 100, 5, 0xc6ad88);
     }
+    for (const [frame, x, w] of [['shelf', 335, 125], ['sofa', 720, 145]] as const) {
+      const furniture = scene.add.image(x, 230, 'home', frame).setOrigin(.5, 1).setDepth(-2);
+      furniture.setDisplaySize(w, w * furniture.frame.height / furniture.frame.width);
+    }
+    // The raised bedroom shares the same coordinates as the final landing.
+    rect(1538, 34, 5, 112, 0xe3ded5); rect(1538, 34, width - 1538, 5, 0xd6c4a9);
+    rect(1538, 146, width - 1538, 84, 0xf0ede7); rect(1538, 146, width - 1538, 5, 0xc7aa81);
+    scene.add.text(1490, 93, 'HABITACIÓ →', { fontFamily: 'monospace', fontSize: '7px', color: '#566558' }).setOrigin(.5).setDepth(1);
   } else {
     const distant = scene.add.graphics().setScrollFactor(.18, 1).setDepth(-3);
     distant.fillStyle(snowy ? 0x92b8c5 : forest ? 0x799f85 : 0x97bda4);
@@ -56,8 +64,8 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     }
     if (mode === 'skate') prop(scene, 'party', level.finish + 10, 230, 95, 1);
   }
-  rect(0, 230, width, 40, inside ? 0xc79d74 : snowy ? 0x879eaa : mode === 'skate' ? 0x717f89 : 0x8e7657);
-  rect(0, 230, width, snowy ? 11 : 6, inside ? 0xb68560 : snowy ? 0xf4fcf4 : mode === 'skate' ? 0xc3c8bd : 0x7b9e50);
+  rect(0, 230, width, 40, inside ? 0xdac5a4 : snowy ? 0x879eaa : mode === 'skate' ? 0x717f89 : 0x8e7657);
+  rect(0, 230, width, snowy ? 11 : 6, inside ? 0xc4aa85 : snowy ? 0xf4fcf4 : mode === 'skate' ? 0xc3c8bd : 0x7b9e50);
   for (let x = 0; x < width; x += 32) {
     rect(x, 242, 1, 28, inside ? 0xaf805e : 0x718275);
     if (!inside) rect(x + 10, 254, 5, 3, snowy ? 0xc5d8dc : 0xb6a07c);
@@ -67,10 +75,16 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
 
 export function platformArt(scene: Phaser.Scene, level: Level, p: Level['platforms'][number]) {
   if (level.mode === 'baby') {
+    if (p.x >= 1538) return; // The bed sprite supplies its visible mattress.
     const g = scene.add.graphics().setDepth(0);
-    g.fillStyle(0x7da9bb).fillRoundedRect(p.x - p.width / 2, p.y, p.width, p.height, 4);
-    g.lineStyle(2, 0xf0cf68).strokeRoundedRect(p.x - p.width / 2 + 2, p.y + 2, p.width - 4, p.height - 4, 3);
-    prop(scene, 'cushions', p.x, p.y + p.height, p.width, 1).setDisplaySize(p.width, p.height);
+    const left = p.x - p.width / 2;
+    g.fillStyle(0xf2f0e9).fillRect(left, p.y, p.width, p.height);
+    g.fillStyle(0xd1b78f).fillRect(left, p.y, p.width, 4);
+    g.lineStyle(1, 0xd6d0c5).strokeRect(left, p.y + 4, p.width, p.height - 4);
+    if (p.x < 800) {
+      g.lineStyle(1, 0xd6d0c5).lineBetween(left + p.width / 2, p.y + 8, left + p.width / 2, p.y + p.height - 3);
+      g.fillStyle(0x9e988d).fillRect(left + p.width / 2 - 9, p.y + 12, 4, 2).fillRect(left + p.width / 2 + 5, p.y + 12, 4, 2);
+    }
   } else if (level.mode === 'nature') {
     const left = p.x - p.width / 2;
     const g = scene.add.graphics().setDepth(2);
