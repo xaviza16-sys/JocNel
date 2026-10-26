@@ -159,19 +159,20 @@ export class MotoRace extends Phaser.Scene {
     if (race.spin > 0) this.rider.setTexture('race-spin', `spin-${this.hooks.reducedMotion ? 0 : Math.floor(rotation * 16) % 8}`);
     else this.rider.setTexture('race-rider', frame);
     this.rider.setPosition(Math.round(x), 261).setAngle(0).setFlipX(false);
-    this.rider.setDisplaySize(88 * this.rider.frame.realWidth / this.rider.frame.realHeight, 88);
+    const riderHeight = 88 * .6;
+    this.rider.setDisplaySize(riderHeight * this.rider.frame.realWidth / this.rider.frame.realHeight, riderHeight);
     if (race.spin > 0) {
       if (!this.hooks.reducedMotion) {
         // Eight actual views show two complete turns around the vertical axis.
         // The small skid offset never changes the physical road lane.
         const angle = rotation * Math.PI * 4;
         this.rider.setX(x + Math.sin(angle) * 9).setY(261 - Math.sin(progress * Math.PI) * 3).setAngle(Math.sin(angle) * 5);
-        g.lineStyle(1, 0xa78654, .75).strokeEllipse(x, 255, 65, 9);
+        g.lineStyle(1, 0xa78654, .75).strokeEllipse(x, 255, 39, 6);
       } else this.rider.setAngle(5);
     }
     if (race.boost > 0 && !this.hooks.reducedMotion) {
       g.lineStyle(2, 0xffe4a2, .9);
-      for (const side of [-1, 1]) for (let i = 0; i < 3; i++) g.lineBetween(x + side * (28 + i * 6), 228 + i * 4, x + side * (32 + i * 8), 258);
+      for (const side of [-1, 1]) for (let i = 0; i < 3; i++) g.lineBetween(x + side * (17 + i * 4), 241 + i * 3, x + side * (20 + i * 5), 258);
     }
   }
 }

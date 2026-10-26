@@ -3,7 +3,7 @@ import { levels, nextLevel, SaveManager, validateLevels, whatsAppUrl } from './m
 
 describe('level configuration and progression', () => {
   it('provides the complete ordered campaign through age ten', () => {
-    expect(levels.map(l => l.mode)).toEqual(['baby', 'toddler', 'moto', 'school', 'snow', 'nature', 'skate']);
+    expect(levels.map(l => l.mode)).toEqual(['baby', 'toddler', 'moto', 'hospital', 'snow', 'nature', 'skate']);
     expect(nextLevel('baby')?.id).toBe('toddler');
     expect(nextLevel('moto')?.id).toBe('school');
     expect(nextLevel('skate')).toBeUndefined();
@@ -13,6 +13,14 @@ describe('level configuration and progression', () => {
     expect(() => validateLevels([{ ...levels[0], finish: 2000 }])).toThrow();
     expect(() => validateLevels([levels[0], levels[0]])).toThrow();
     expect(() => validateLevels([{ ...levels[1], platforms: [{ x: 50, width: 30, height: 500 }] }])).toThrow();
+  });
+  it('replaces the fourth chapter with hospital staff while preserving saved progress IDs', () => {
+    const hospital = levels[3];
+    expect(hospital.id).toBe('school');
+    expect(hospital.mode).toBe('hospital');
+    expect(new Set(hospital.enemies.map(e => e.kind))).toEqual(new Set(['doctor', 'nurse']));
+    expect(hospital.goalY).toBe(230);
+    expect(() => validateLevels([{ ...levels[1], enemies: [{ kind: 'doctor', x: 200, range: 30 }] }])).toThrow();
   });
   it('keeps food enemies out of the early years and gives the baby real climbing obstacles', () => {
     for (const level of levels.filter(l => l.ageMin < 4)) expect(level.enemies.every(e => e.kind === 'ball' || e.kind === 'snowball')).toBe(true);

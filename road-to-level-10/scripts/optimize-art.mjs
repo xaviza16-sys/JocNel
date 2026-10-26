@@ -7,6 +7,7 @@ files.push('assets/adventure/toddler-nel-v1.png', 'assets/adventure/toy-moto-par
 files.push('assets/race/nel-promenade-rider-v1.png', 'assets/race/promenade-v1.png');
 files.push('assets/race/nel-moto-spin-v1.png');
 files.push('assets/race/nel-moto-spin-v2.png');
+files.push('assets/adventure/hospital-family-v1.png', 'assets/adventure/hospital-corridor-v1.png');
 try {
   const page = await browser.newPage();
   for (const file of files) {

@@ -131,7 +131,7 @@ function finishLevel(level: Level, copy: string) {
     actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
   };
   window.clearTimeout(completionTimer); completionTimer = undefined;
-  if (level.mode === 'baby' || level.mode === 'toddler') {
+  if (level.mode === 'baby' || level.mode === 'toddler' || level.mode === 'hospital') {
     // Leave the hug or motorcycle discovery unobscured before the results
     // panel appears. Other panels cancel this browser timer.
     overlay.replaceChildren();

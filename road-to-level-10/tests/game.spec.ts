@@ -186,6 +186,30 @@ test('motorcycle leaves slow down, pedestrians require getting up, and poop spin
   expect(errors).toEqual([]); await context.close();
 });
 
+test('hospital staff can be avoided and Nel meets his newborn brother before continuing', async ({ page }) => {
+  test.setTimeout(45000);
+  await page.setViewportSize({ width: 844, height: 390 });
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await choose(page, 'Coneixem el germanet!');
+  await page.keyboard.down('ArrowRight');
+  // A missed dodge returns to the checkpoint and permits another attempt.
+  await expect(page.locator('#status')).toContainText('1 ensopegades', { timeout: 6000 });
+  for (let i = 0; i < 90; i++) {
+    if ((await page.locator('#status').innerText()).includes('GERMANET TROBAT')) break;
+    await page.keyboard.press('Space'); await page.waitForTimeout(250);
+  }
+  await page.keyboard.up('ArrowRight');
+  await expect(page.locator('#status')).toContainText('GERMANET TROBAT');
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await page.screenshot({ path: 'test-results/hospital-family-reunion.png', fullPage: true });
+  await page.waitForTimeout(900);
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await expect(page.getByText(/Ja ets el germà gran, Nel!/)).toBeVisible();
+  await page.getByRole('button', { name: /Següent:/ }).click();
+  await expect(page.locator('#chapter')).toContainText('SURF DE NEU');
+  expect(errors).toEqual([]);
+});
+
 test('pause, chapter skip, invitation and sound work in the full campaign', async ({ page }) => {
   await choose(page, 'Les primeres passes');
   await page.getByRole('button', { name: 'Pausa', exact: true }).click();

@@ -45,6 +45,7 @@ export class PlatformLevel extends Phaser.Scene {
   private momentumUntil = 0;
   private ropes!: Phaser.GameObjects.Graphics;
   private mother?: Phaser.GameObjects.Image;
+  private hospitalBed?: Phaser.GameObjects.Image;
   private lastPushSound = 0;
   private dogArt?: Phaser.GameObjects.Image;
   private dogMounted = false;
@@ -68,6 +69,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.blocks = []; this.mantle = undefined; this.mantles = 0; this.zip = this.vine = undefined;
     this.zipped.clear(); this.swung.clear(); this.grabAfter = this.momentumUntil = this.lastPushSound = 0; this.mother = undefined;
     this.dogArt = undefined; this.dogMounted = this.dogCrossed = false;
+    this.hospitalBed = undefined;
     this.babyDistance = 0; this.babyLastX = data.level.spawn; this.babyFacingLeft = false;
     this.toddlerDistance = 0; this.toddlerLastX = data.level.spawn; this.toddlerFacingLeft = this.toddlerWasAirborne = false;
     this.toddlerAirSince = 0; this.toddlerLandedAt = -Infinity;
@@ -118,10 +120,12 @@ export class PlatformLevel extends Phaser.Scene {
     });
     const enemies = this.physics.add.group();
     this.level.enemies.forEach((spawn, i) => {
-      const body = enemies.create(spawn.x, 218, 'star') as Phaser.Physics.Arcade.Image;
+      const staff = spawn.kind === 'doctor' || spawn.kind === 'nurse';
+      const body = enemies.create(spawn.x, staff ? 204 : 218, 'star') as Phaser.Physics.Arcade.Image;
       body.setVisible(false).setCollideWorldBounds(true); (body.body as Phaser.Physics.Arcade.Body).setSize(18, 20);
       const frame = ['ball', 'snowball'].includes(spawn.kind) ? spawn.kind : `${spawn.kind}-0`;
-      const art = this.add.image(spawn.x, 230, 'foods', frame).setOrigin(.5, 1).setDepth(5);
+      if (staff) (body.body as Phaser.Physics.Arcade.Body).setSize(18, 44);
+      const art = this.add.image(spawn.x, 230, staff ? 'hospital' : 'foods', frame).setOrigin(.5, 1).setDepth(5);
       this.hazards.push({ body, art, kind: spawn.kind, anchor: spawn.x, range: spawn.range, direction: -1, phase: i * 670, lastJump: -9999 });
     });
     this.physics.add.collider(enemies, floor); this.physics.add.collider(enemies, platforms);
@@ -148,11 +152,14 @@ export class PlatformLevel extends Phaser.Scene {
     } else if (this.level.mode === 'toddler') {
       const moto = this.add.image(this.level.finish + 15, this.level.goalY, 'toy-moto', 'parked').setOrigin(.5, 1).setDepth(5);
       moto.setDisplaySize(60, 60 * moto.frame.height / moto.frame.width);
+    } else if (this.level.mode === 'hospital') {
+      this.hospitalBed = this.add.image(this.level.finish + 32, 230, 'hospital', 'bed').setOrigin(.5, 1).setDepth(5);
+      this.hospitalBed.setDisplaySize(100, 100 * this.hospitalBed.frame.height / this.hospitalBed.frame.width);
     } else {
       const goal = this.add.image(this.level.finish + 6, this.level.goalY, 'foods', this.level.mode === 'skate' ? 'cake' : 'bear').setOrigin(.5, 1).setDepth(4);
       goal.setDisplaySize(this.level.mode === 'skate' ? 31 : 25, this.level.mode === 'skate' ? 31 : 27);
     }
-    this.add.text(this.level.finish, this.level.goalY - (this.level.mode === 'baby' ? 91 : this.level.mode === 'toddler' ? 65 : 45), this.level.mode === 'baby' ? 'LA MAMA! ♡' : this.level.mode === 'toddler' ? 'LA MOTO DE JOGUINA!' : this.level.mode === 'nature' ? 'EL MIRADOR ↑' : this.level.mode === 'skate' ? 'NIVELL 10' : 'ARRIBADA!', { fontFamily: 'monospace', fontSize: '8px', color: '#254a42', backgroundColor: '#fff0c8', padding: { x: 4, y: 3 } }).setOrigin(.5).setDepth(5);
+    this.add.text(this.level.finish, this.level.goalY - (this.level.mode === 'hospital' ? 95 : this.level.mode === 'baby' ? 91 : this.level.mode === 'toddler' ? 65 : 45), this.level.mode === 'hospital' ? 'EL TEU GERMANET! ♡' : this.level.mode === 'baby' ? 'LA MAMA! ♡' : this.level.mode === 'toddler' ? 'LA MOTO DE JOGUINA!' : this.level.mode === 'nature' ? 'EL MIRADOR ↑' : this.level.mode === 'skate' ? 'NIVELL 10' : 'ARRIBADA!', { fontFamily: 'monospace', fontSize: '8px', color: '#254a42', backgroundColor: '#fff0c8', padding: { x: 4, y: 3 } }).setOrigin(.5).setDepth(5);
     this.cameras.main.setBounds(0, 0, this.level.width, 270).startFollow(this.player, true, this.hooks.reducedMotion ? 1 : .15, 1, -72, 0);
     const style = { fontFamily: 'monospace', fontSize: '9px', color: '#24483e', backgroundColor: '#fff0d1', padding: { x: 6, y: 5 } };
     this.hud = this.add.text(9, 9, '', style).setScrollFactor(0).setDepth(20);
@@ -238,6 +245,10 @@ export class PlatformLevel extends Phaser.Scene {
         landingAge: this.clock - this.toddlerLandedAt, reducedMotion: this.hooks.reducedMotion });
       this.hero.setTexture('toddler-nel', pose).setPosition(this.player.x, body.bottom).setFlipX(this.toddlerFacingLeft);
       this.hero.setDisplaySize(48 * this.hero.frame.realWidth / this.hero.frame.realHeight, 48);
+    } else if (this.level.mode === 'hospital') {
+      const pose = airborne ? 'jump' : axis ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 120) % 4}` : 'idle';
+      this.hero.setTexture('hospital', pose).setPosition(this.player.x, body.bottom).setFlipX(axis < 0);
+      this.hero.setDisplaySize(44 * this.hero.frame.realWidth / this.hero.frame.realHeight, 44);
     } else {
       const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
       this.hero.setTexture(special ? 'mechanics' : 'heroes', special || `${config.actor}-${frame}`).setPosition(this.player.x, body.bottom).setFlipX(axis < 0 && this.level.mode !== 'snow' && this.level.mode !== 'skate');
@@ -259,11 +270,12 @@ export class PlatformLevel extends Phaser.Scene {
       const intent = enemyIntent(enemy.kind, this.clock + enemy.phase, enemy.direction);
       enemy.body.setVelocityX(intent.vx);
       if (intent.jump && eb.blocked.down && this.clock - enemy.lastJump > 800) { enemy.body.setVelocityY(enemy.kind === 'pepper' ? -230 : -165); enemy.lastJump = this.clock; }
-      const animation = intent.warn ? 1 : !eb.blocked.down ? 3 : 1 + Math.floor(this.clock / 160) % 2;
+      const staff = enemy.kind === 'doctor' || enemy.kind === 'nurse';
+      const animation = staff ? this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 180) % 2 : intent.warn ? 1 : !eb.blocked.down ? 3 : 1 + Math.floor(this.clock / 160) % 2;
       enemy.art.setFrame(['ball', 'snowball'].includes(enemy.kind) ? enemy.kind : `${enemy.kind}-${animation}`);
-      enemy.art.setPosition(enemy.body.x, eb.bottom).setFlipX(enemy.direction > 0).setTint(intent.warn ? 0xffd59b : 0xffffff);
-      const h = ['ball', 'snowball'].includes(enemy.kind) ? 21 : 29;
-      enemy.art.setDisplaySize(h * enemy.art.frame.width / enemy.art.frame.height, h);
+      enemy.art.setPosition(enemy.body.x, eb.bottom).setFlipX(staff ? enemy.direction < 0 : enemy.direction > 0).setTint(intent.warn ? 0xffd59b : 0xffffff);
+      const h = staff ? 58 : ['ball', 'snowball'].includes(enemy.kind) ? 21 : 29;
+      enemy.art.setDisplaySize(h * enemy.art.frame.realWidth / enemy.art.frame.realHeight, h);
       if (enemy.kind === 'ball' || enemy.kind === 'snowball') enemy.art.setOrigin(.5, .5).setY(eb.bottom - h / 2).setAngle(this.hooks.reducedMotion ? 0 : enemy.body.x * 3);
     });
     for (const point of this.level.checkpoints) if (this.player.x >= point && point > this.checkpoint) { this.checkpoint = point; this.hooks.audio.sfx('checkpoint'); }
@@ -357,6 +369,13 @@ export class PlatformLevel extends Phaser.Scene {
   }
   complete() {
     this.finished = true; this.player.setVelocity(0, 0); this.scene.pause();
+    if (this.hospitalBed) {
+      this.hospitalBed.setFrame('bed-smile').setDisplaySize(100, 100 * this.hospitalBed.frame.height / this.hospitalBed.frame.width);
+      this.hero.setTexture('hospital', 'wave').setPosition(this.level.finish - 32, 230).setFlipX(false);
+      this.hero.setDisplaySize(44 * this.hero.frame.realWidth / this.hero.frame.realHeight, 44);
+      this.hint.setVisible(false); this.note.setText('JA ETS EL GERMÀ GRAN! ♡');
+      document.getElementById('status')!.textContent += ' · GERMANET TROBAT';
+    }
     if (this.mother) {
       this.hero.setVisible(false); this.hint.setVisible(false); this.note.setText('AMB LA MAMA ♡');
       this.mother.setTexture('baby-hug', 'hug').setDisplaySize(74 * this.mother.frame.width / this.mother.frame.height, 74);
@@ -381,6 +400,6 @@ export class PlatformLevel extends Phaser.Scene {
         }, 180);
       }
     }
-    this.hooks.complete(this.level, this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'toddler' ? 'Has trobat la teva moto de joguina, Nel! Ara que ja camines i saltes, toca pujar-hi i anar cap a l’escola bressol.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
+    this.hooks.complete(this.level, this.level.mode === 'hospital' ? 'Ja ets el germà gran, Nel! Has travessat l’hospital i has conegut el teu germanet amb la mama. Quin record més especial!' : this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'toddler' ? 'Has trobat la teva moto de joguina, Nel! Ara que ja camines i saltes, toca pujar-hi i anar cap a l’escola bressol.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
   }
 }

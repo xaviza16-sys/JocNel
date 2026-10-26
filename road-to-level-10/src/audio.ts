@@ -4,7 +4,7 @@ export const tunes = {
   baby: [72, null, 76, 79, 76, null, 74, 72, 69, null, 72, 76, 74, 71, 72, null],
   toddler: [72, 74, 76, 79, 81, 79, 76, 74, 77, 79, 81, 84, 79, 76, 74, 72],
   moto: [76, 76, 79, 81, 79, 76, 74, 72, 74, 74, 77, 79, 77, 74, 72, 71],
-  school: [72, 79, 76, 79, 74, 81, 77, 81, 76, 84, 79, 84, 77, 81, 74, 71],
+  hospital: [72, 79, 76, 79, 74, 81, 77, 81, 76, 84, 79, 84, 77, 81, 74, 71],
   snow: [84, 79, 76, 72, 81, 77, 74, 69, 79, 76, 72, 67, 77, 74, 71, 72],
   nature: [69, null, 72, 76, 79, 76, 72, null, 67, null, 71, 74, 77, 74, 71, null],
   skate: [72, 72, 79, 76, 81, 79, 84, 79, 77, 77, 81, 79, 74, 71, 72, 79],
@@ -12,7 +12,7 @@ export const tunes = {
 } satisfies Record<string, (number | null)[]>;
 export type Theme = keyof typeof tunes;
 export const midiHz = (note: number) => 440 * 2 ** ((note - 69) / 12);
-const tempo: Record<Theme, number> = { menu: 108, baby: 96, toddler: 112, moto: 128, school: 118, snow: 134, nature: 100, skate: 140, party: 124 };
+const tempo: Record<Theme, number> = { menu: 108, baby: 96, toddler: 112, moto: 128, hospital: 118, snow: 134, nature: 100, skate: 140, party: 124 };
 
 /** Original three-voice chiptunes. No recordings, remote files or autoplay. */
 export class AudioManager {

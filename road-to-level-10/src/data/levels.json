@@ -304,102 +304,66 @@
   },
   {
     "id": "school",
-    "title": "Un pati ple de sorpreses",
-    "subtitle": "4–6 anys · Escola i amics",
-    "mode": "school",
+    "title": "Coneixem el germanet!",
+    "subtitle": "4–6 anys · Una visita molt especial",
+    "mode": "hospital",
     "ageMin": 4,
-    "width": 1800,
+    "width": 1660,
     "spawn": 64,
-    "finish": 1680,
-    "goalY": 180,
-    "hint": "ESPAI Salta per esquivar el Iogurt Mutant i el Tomàquet Furiós. No cal atacar-los!",
+    "finish": 1490,
+    "goalY": 230,
+    "hint": "← → Camina · ESPAI Salta per esquivar metges i infermeres amb mascareta. La mama i el teu germanet t’esperen al final!",
     "stars": [
       {
-        "x": 220,
+        "x": 200,
         "y": 196
       },
       {
-        "x": 470,
-        "y": 148
+        "x": 430,
+        "y": 162
       },
       {
-        "x": 730,
-        "y": 152
-      },
-      {
-        "x": 950,
+        "x": 700,
         "y": 196
       },
       {
-        "x": 1220,
-        "y": 145
+        "x": 920,
+        "y": 165
       },
       {
-        "x": 1530,
-        "y": 152
+        "x": 1190,
+        "y": 196
       },
       {
-        "x": 1660,
-        "y": 150
+        "x": 1430,
+        "y": 170
       }
     ],
     "checkpoints": [
-      550,
-      1050,
-      1450
+      500,
+      990,
+      1340
     ],
-    "platforms": [
-      {
-        "x": 460,
-        "y": 180,
-        "width": 130,
-        "height": 12
-      },
-      {
-        "x": 730,
-        "y": 185,
-        "width": 110,
-        "height": 12
-      },
-      {
-        "x": 1220,
-        "y": 178,
-        "width": 130,
-        "height": 12
-      },
-      {
-        "x": 1510,
-        "y": 205,
-        "width": 90,
-        "height": 25
-      },
-      {
-        "x": 1590,
-        "y": 180,
-        "width": 95,
-        "height": 50
-      },
-      {
-        "x": 1700,
-        "y": 180,
-        "width": 130,
-        "height": 50
-      }
-    ],
+    "platforms": [],
     "enemies": [
       {
-        "kind": "yogurt",
+        "kind": "doctor",
         "x": 330,
         "range": 55
       },
       {
-        "kind": "tomato",
-        "x": 900,
-        "range": 85
+        "kind": "nurse",
+        "x": 650,
+        "range": 65
       },
       {
-        "kind": "yogurt",
-        "x": 1360,
+        "kind": "doctor",
+        "x": 890,
+        "range": 60
+      },
+      {
+        "kind": "nurse",
+        "x": 1160,
         "range": 65
       }
     ],

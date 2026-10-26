@@ -24,7 +24,7 @@ export function validateLevels(data: unknown): Level[] {
   const ids = new Set<string>();
   for (const item of data) {
     const l = item as Level;
-    if (!l || typeof l.id !== 'string' || ids.has(l.id) || !['baby', 'toddler', 'moto', 'school', 'snow', 'nature', 'skate'].includes(l.mode)
+    if (!l || typeof l.id !== 'string' || ids.has(l.id) || !['baby', 'toddler', 'moto', 'hospital', 'snow', 'nature', 'skate'].includes(l.mode)
       || typeof l.title !== 'string' || typeof l.subtitle !== 'string' || typeof l.hint !== 'string'
       || !Number.isFinite(l.width) || !Number.isFinite(l.spawn) || !Number.isFinite(l.finish)
       || l.spawn < 0 || l.spawn >= l.finish || l.finish >= l.width
@@ -33,7 +33,7 @@ export function validateLevels(data: unknown): Level[] {
       || !Array.isArray(l.checkpoints) || !l.checkpoints.every(x => Number.isFinite(x) && x > l.spawn && x < l.finish)
       || !Array.isArray(l.platforms) || !l.platforms.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y) && p.y >= 60 && p.y < 230 && p.x - p.width / 2 > 0 && p.x + p.width / 2 < l.width && p.width > 0 && p.height > 0 && p.height <= 110)
       || !Array.isArray(l.ladders) || !l.ladders.every(p => p && Number.isFinite(p.x) && p.x > 0 && p.x < l.width && p.top >= 50 && p.top < p.bottom && p.bottom <= 230)
-      || !Array.isArray(l.enemies) || !l.enemies.every(e => e && ['yogurt', 'tomato', 'pepper', 'ball', 'snowball'].includes(e.kind) && Number.isFinite(e.x) && e.x > 80 && e.x < l.finish && Number.isFinite(e.range) && e.range > 0 && e.range <= 160 && (l.ageMin >= 4 || ['ball', 'snowball'].includes(e.kind)))
+      || !Array.isArray(l.enemies) || !l.enemies.every(e => e && ['yogurt', 'tomato', 'pepper', 'ball', 'snowball', 'doctor', 'nurse'].includes(e.kind) && Number.isFinite(e.x) && e.x > 80 && e.x < l.finish && Number.isFinite(e.range) && e.range > 0 && e.range <= 160 && (l.ageMin >= 4 || ['ball', 'snowball'].includes(e.kind)) && (!['doctor', 'nurse'].includes(e.kind) || l.mode === 'hospital'))
       || l.mode === 'moto' && !validRace(l.race)) {
       throw new Error('Configuració de nivell no vàlida');
     }

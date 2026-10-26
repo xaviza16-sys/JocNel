@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { enemyIntent, JumpBuffer, movement } from './platform-model';
 
 describe('enemy behavior', () => {
+  it('keeps hospital staff walking without hops or dashes', () => {
+    expect(enemyIntent('doctor', 30, -1)).toEqual({ vx: -28, jump: false, warn: false });
+    expect(enemyIntent('nurse', 1200, 1)).toEqual({ vx: 36, jump: false, warn: false });
+  });
   it('makes yogurt hop periodically while tomato stays rolling', () => {
     expect(enemyIntent('yogurt', 30, -1)).toMatchObject({ vx: -24, jump: true });
     expect(enemyIntent('yogurt', 500, 1).jump).toBe(false);

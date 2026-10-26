@@ -4,6 +4,19 @@ import { prop } from './adventure-art';
 
 export function adventureWorld(scene: Phaser.Scene, level: Level) {
   const { mode, width } = level;
+  if (mode === 'hospital') {
+    // One world-space corridor: decoration and floor never drift apart.
+    for (let x = 0; x < width; x += 480) {
+      scene.add.image(x, 0, 'hospital-corridor').setOrigin(0).setDisplaySize(480, 270).setDepth(-4);
+    }
+    for (const x of [400, 950, 1280]) {
+      const trolley = scene.add.image(x, 230, 'hospital', 'trolley').setOrigin(.5, 1).setDepth(-1);
+      trolley.setDisplaySize(42, 42 * trolley.frame.height / trolley.frame.width);
+    }
+    scene.add.text(level.finish, 113, 'MATERNITAT ♡', { fontFamily: 'monospace', fontSize: '9px', color: '#294c43', backgroundColor: '#fff0cf', padding: { x: 5, y: 4 } }).setOrigin(.5).setDepth(2);
+    const floor = scene.add.zone(width / 2, 250, width, 40);
+    scene.physics.add.existing(floor, true); return floor;
+  }
   const g = scene.add.graphics().setDepth(-4);
   const rect = (x: number, y: number, w: number, h: number, c: number) => g.fillStyle(c).fillRect(x, y, w, h);
   const snowy = mode === 'snow', inside = mode === 'baby', forest = mode === 'nature';
@@ -41,7 +54,6 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
       scene.add.text(level.finish, deck.y - 37, 'ARRIBADA', { fontFamily: 'monospace', fontSize: '7px', color: '#294c43' }).setOrigin(.5, 0).setDepth(3);
       scene.add.text(level.finish, 215, 'ARRIBADA →', { fontFamily: 'monospace', fontSize: '7px', color: '#294c43', backgroundColor: '#fff0cf', padding: { x: 3, y: 2 } }).setOrigin(.5).setDepth(3);
     }
-    if (mode === 'school') prop(scene, 'school', level.finish + 15, level.goalY, 135, -1);
     if (mode === 'skate') prop(scene, 'party', level.finish + 10, 230, 95, 1);
   }
   rect(0, 230, width, 40, inside ? 0xc79d74 : snowy ? 0x879eaa : mode === 'skate' ? 0x717f89 : 0x8e7657);
@@ -73,7 +85,7 @@ export function platformArt(scene: Phaser.Scene, level: Level, p: Level['platfor
       g.fillStyle(0xc39757).fillRect(left, p.y - 20, p.width, 3);
     }
   } else {
-    const frame = level.mode === 'snow' ? 'snow-tile' : level.mode === 'school' || level.mode === 'skate' ? 'city-tile' : 'grass-tile';
+    const frame = level.mode === 'snow' ? 'snow-tile' : level.mode === 'skate' ? 'city-tile' : 'grass-tile';
     const image = prop(scene, frame, p.x, p.y + p.height, p.width, 0); image.setDisplaySize(p.width, p.height);
     if (level.mode === 'skate') prop(scene, 'ramp', p.x, 230, p.width, 1).setDisplaySize(p.width, 230 - p.y);
   }
