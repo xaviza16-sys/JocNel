@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { Level } from './model';
 import { prop } from './adventure-art';
 import { outdoorBackdrop } from './outdoor-art';
+import { gardenGround, gardenPlatform } from './garden-terrain';
 
 export function adventureWorld(scene: Phaser.Scene, level: Level) {
   const { mode, width } = level;
@@ -75,6 +76,10 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     }
     if (mode === 'skate') prop(scene, 'party', level.finish + 10, 230, 95, 1);
   }
+  if (mode === 'toddler') {
+    gardenGround(scene, width);
+    const floor = scene.add.zone(width / 2, 250, width, 40); scene.physics.add.existing(floor, true); return floor;
+  }
   rect(0, 230, width, 40, inside ? 0xdac5a4 : snowy ? 0x879eaa : mode === 'skate' ? 0x717f89 : 0x8e7657);
   rect(0, 230, width, snowy ? 11 : 6, inside ? 0xc4aa85 : snowy ? 0xf4fcf4 : mode === 'skate' ? 0xc3c8bd : 0x7b9e50);
   for (let x = 0; x < width; x += 32) {
@@ -95,6 +100,7 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
 }
 
 export function platformArt(scene: Phaser.Scene, level: Level, p: Level['platforms'][number]) {
+  if (level.mode === 'toddler') { gardenPlatform(scene, p); return; }
   if (level.mode === 'baby') {
     if (p.x >= 1538) return; // The bed sprite supplies its visible mattress.
     const g = scene.add.graphics().setDepth(0);

@@ -5,9 +5,11 @@ const base = { distance: 0, time: 0, moving: false, airborne: false, vy: 0, airT
 
 describe('toddler motion', () => {
   it('advances eight walking poses with travel, then rests when stopped', () => {
-    const cycle = Array.from({ length: 8 }, (_, i) => toddlerAnimationFrame({ ...base, moving: true, distance: i * 16 }));
+    const cycle = Array.from({ length: 8 }, (_, i) => toddlerAnimationFrame({ ...base, moving: true, distance: i * 24 }));
     expect(new Set(cycle).size).toBe(8);
-    expect(toddlerAnimationFrame({ ...base, moving: true, distance: 128 })).toBe(cycle[0]);
+    expect(toddlerAnimationFrame({ ...base, moving: true, distance: 192 })).toBe(cycle[0]);
+    expect(toddlerAnimationFrame({ ...base, moving: true, distance: 22 })).toBe(cycle[0]);
+    expect(toddlerAnimationFrame({ ...base, time: 600 })).toBe('idle-0');
     expect(toddlerAnimationFrame({ ...base, distance: 24 })).toMatch(/^idle-/);
   });
   it('follows ascent, apex, descent and soft landing instead of looping a jump', () => {

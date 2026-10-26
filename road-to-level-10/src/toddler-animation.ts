@@ -15,7 +15,7 @@ export function toddlerAnimationFrame(state: {
     return `jump-${pose}`;
   }
   if (!state.reducedMotion && state.landingAge < 250) return state.landingAge < 140 ? 'jump-6' : 'jump-7';
-  // A full stride takes 128 world pixels (~1.16 s at walking speed).
-  if (state.moving) return `walk-${state.reducedMotion ? 0 : Math.floor(state.distance / 16) % 8}`;
-  return `idle-${state.reducedMotion ? 0 : Math.floor(state.time / 450) % 4}`;
+  // A full stride takes 192 world pixels (~1.75 s), with each pose held ~220 ms.
+  if (state.moving) return `walk-${state.reducedMotion ? 0 : Math.floor(state.distance / 24) % 8}`;
+  return `idle-${state.reducedMotion ? 0 : Math.floor(state.time / 700) % 4}`;
 }

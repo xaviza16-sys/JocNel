@@ -293,7 +293,7 @@ export class PlatformLevel extends Phaser.Scene {
       if (intent.jump && eb.blocked.down && this.clock - enemy.lastJump > 800) { enemy.body.setVelocityY(enemy.kind === 'pepper' ? -230 : -165); enemy.lastJump = this.clock; }
       const staff = enemy.kind === 'doctor' || enemy.kind === 'nurse';
       enemy.distance += Math.abs(enemy.body.x - enemy.lastX); enemy.lastX = enemy.body.x;
-      const animation = staff ? this.hooks.reducedMotion ? 0 : Math.floor(enemy.distance / 12) % 2 : intent.warn ? 1 : !eb.blocked.down ? 3 : 1 + Math.floor(this.clock / 160) % 2;
+      const animation = staff ? this.hooks.reducedMotion ? 0 : Math.floor(enemy.distance / 12) % 2 : intent.warn ? 1 : !eb.blocked.down ? 3 : this.hooks.reducedMotion ? 0 : 1 + Math.floor(this.clock / (this.level.mode === 'toddler' ? 300 : 160)) % 2;
       enemy.art.setFrame(['ball', 'snowball'].includes(enemy.kind) ? enemy.kind : `${enemy.kind}-${animation}`);
       enemy.art.setPosition(enemy.body.x, eb.bottom).setFlipX(staff ? enemy.direction < 0 : enemy.direction > 0).setTint(intent.warn ? 0xffd59b : 0xffffff);
       const h = staff ? 58 : ['ball', 'snowball'].includes(enemy.kind) ? 21 : 29;
@@ -422,7 +422,7 @@ export class PlatformLevel extends Phaser.Scene {
         this.discoveryTimer = window.setInterval(() => {
           showDiscovery(++frame);
           if (frame === 3) { window.clearInterval(this.discoveryTimer); this.discoveryTimer = undefined; }
-        }, 180);
+        }, 300);
       }
     }
     this.hooks.complete(this.level, this.level.mode === 'hospital' ? 'Ja ets el germà gran, Nel! Has travessat l’hospital i has conegut el teu germanet amb la mama. Quin record més especial!' : this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'toddler' ? 'Has trobat la teva moto de joguina, Nel! Ara que ja camines i saltes, toca pujar-hi i anar cap a l’escola bressol.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);

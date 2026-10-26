@@ -13,6 +13,7 @@
 - En Nel nadó: nou full de 24 poses i abraçada final generats amb l’eina integrada d’imatges a partir de la fotografia familiar del nadó amb roba clara i mànigues ratllades. Fitxers i prompts a `docs/NEL_NADO_ANIMACIONS.md`.
 
 - Motor: Phaser 3 (MIT). Eines: TypeScript, Vite, Vitest i Playwright.
+- Terrasses, bancs i terra del jardí: atlas propi generat amb l’eina integrada `image_gen`, amb el fons existent com a referència de paleta i estil. Original, recurs de joc i prompt a [JARDI_I_RITME.md](JARDI_I_RITME.md).
 - Sprites inicials: recursos provisionals inclosos al projecte, conservats sense modificar.
 - Escenaris: geometria original dibuixada amb Phaser i fulls il·lustrats generats amb l’eina integrada d’imatges. Tipografia: fonts del sistema.
 - Moto amb vista posterior i carrer de tardor: nous fulls generats prenent el mockup com a referència visual. Fitxers i prompts a `docs/ART_GENERATION.md`.
@@ -21,4 +22,4 @@
 - Mare i gos d’en Nel: nou pixel art personalitzat a partir de la fotografia aportada per l’usuari. Substitueix la mare genèrica al primer capítol. La fotografia original no s’ha copiat al repositori. Fitxers, poses i prompt a `docs/FAMILIA_NEL_CA.md`.
 - Música i so: composicions chiptune originals per capítol i efectes sintetitzats localment amb Web Audio, amb melodia, baix i percussió. S’activen amb el botó de so; la preferència es desa al dispositiu.
 
-El joc no incorpora analítica ni serveis externs durant la partida. Les il·lustracions familiars són interpretacions pixelades de la referència facilitada.
+El joc no incorpora analítica. La classificació compartida desa l’àlies i les puntuacions al servei del marcador. Les il·lustracions familiars són interpretacions pixelades de la referència facilitada.
