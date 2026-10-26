@@ -6,6 +6,7 @@ const browser = await chromium.launch();
 files.push('assets/adventure/toddler-nel-v1.png', 'assets/adventure/toy-moto-parked-v1.png');
 files.push('assets/race/nel-promenade-rider-v1.png', 'assets/race/promenade-v1.png');
 files.push('assets/race/nel-moto-spin-v1.png');
+files.push('assets/race/nel-moto-spin-v2.png');
 try {
   const page = await browser.newPage();
   for (const file of files) {

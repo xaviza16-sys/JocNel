@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import riderUrl from '../assets/race/nel-promenade-rider-v1.webp';
 import promenadeUrl from '../assets/race/promenade-v1.webp';
-import spinUrl from '../assets/race/nel-moto-spin-v1.webp';
+import spinUrl from '../assets/race/nel-moto-spin-v2.webp';
 import { register } from './adventure-art';
 import streetUrl from '../assets/race/autumn-street-v2.webp';
 import atlas from '../assets/race/atlas.json';

@@ -1,5 +1,7 @@
 # La moto pel passeig
 
+El gir ara carrega `nel-moto-spin-v2.webp`, corregit amb la fotografia frontal del nen i la moto. Recursos i prompt actuals a `MOTO_GIR_FRONTAL.md`. La versió v1 següent es conserva com a historial.
+
 ## Actualització de la patinada
 
 `assets/race/nel-moto-spin-v1.png` i `.webp` afegeixen vuit vistes del mateix Nel i la moto: darrere, tres quarts, laterals i davant. S’han generat amb l’eina integrada `image_gen` a partir del sprite del pilot. En tocar una caca, les vistes es recorren dues vegades amb una desacceleració del gir durant 1,6 segons; després es continua des del mateix punt. Les poses es registren a `src/race-art.ts` amb escala i línia de terra comunes.
