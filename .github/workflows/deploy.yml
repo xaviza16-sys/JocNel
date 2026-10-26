@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: road-to-level-10
@@ -27,8 +27,11 @@ jobs:
       - run: npm test && npm run build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-      - run: npx playwright install --with-deps chromium
+      - name: Check preinstalled Chrome
+        run: google-chrome --version
       - run: npm run test:e2e
+        env:
+          PLAYWRIGHT_CHANNEL: chrome
       - uses: actions/upload-pages-artifact@v3
         with:
           path: road-to-level-10/dist
