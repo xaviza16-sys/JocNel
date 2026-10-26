@@ -9,6 +9,8 @@ import { loadRaceArt, createRaceFrames } from './race-art';
 import { loadAdventureArt, createAdventureFrames } from './adventure-art';
 import { PlatformLevel } from './platform-scene';
 import { Snowboard } from './snowboard-scene';
+import { Skatepark } from './skate-scene';
+import { loadOutdoorArt, createOutdoorFrames } from './outdoor-art';
 import './style.css';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -48,16 +50,16 @@ function playingUI(playing: boolean) {
   action.setAttribute('aria-label', activeLevel.mode === 'baby' ? 'Empènyer' : 'Saltar');
   document.querySelector<HTMLButtonElement>('[data-action="climb"]')!.hidden = !['nature', 'baby'].includes(activeLevel.mode);
 }
-function gameplayKey() { return activeLevel.mode === 'moto' ? 'MotoRace' : activeLevel.mode === 'snow' ? 'Snowboard' : 'PlatformLevel'; }
-function gameplay() { return game.scene.getScene(gameplayKey()) as PlatformLevel | MotoRace | Snowboard; }
+function gameplayKey() { return activeLevel.mode === 'moto' ? 'MotoRace' : activeLevel.mode === 'snow' ? 'Snowboard' : activeLevel.mode === 'skate' ? 'Skatepark' : 'PlatformLevel'; }
+function gameplay() { return game.scene.getScene(gameplayKey()) as PlatformLevel | MotoRace | Snowboard | Skatepark; }
 function startLevel(level: Level) {
   activeLevel = level;
-  for (const key of ['Menu', 'LevelSelect', 'Pause', 'Invitation', 'PlatformLevel', 'MotoRace', 'Snowboard']) game.scene.stop(key);
+  for (const key of ['Menu', 'LevelSelect', 'Pause', 'Invitation', 'PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark']) game.scene.stop(key);
   audio.playTheme(level.mode);
   game.scene.start(gameplayKey(), { level });
 }
 function returnMenu() {
-  for (const key of ['PlatformLevel', 'MotoRace', 'Snowboard', 'Pause', 'Invitation', 'LevelSelect']) game.scene.stop(key);
+  for (const key of ['PlatformLevel', 'MotoRace', 'Snowboard', 'Skatepark', 'Pause', 'Invitation', 'LevelSelect']) game.scene.stop(key);
   game.scene.start('Menu');
 }
 
@@ -75,11 +77,11 @@ class Preload extends Phaser.Scene {
       this.load.spritesheet(key, spriteUrls[`../${info.image}`], { frameWidth: info.frameWidth, frameHeight: info.frameHeight });
     }
     loadRaceArt(this);
-    loadAdventureArt(this);
+    loadAdventureArt(this); loadOutdoorArt(this);
   }
   create() {
     createRaceFrames(this);
-    createAdventureFrames(this);
+    createAdventureFrames(this); createOutdoorFrames(this);
     for (const [key, info] of Object.entries(atlas)) for (const [name, anim] of Object.entries(info.animations)) {
       this.anims.create({ key: `${key}-${name}`, frames: this.anims.generateFrameNumbers(key, { start: anim.start, end: anim.end }), frameRate: reducedMotion ? 1 : anim.frameRate, repeat: anim.repeat });
     }
@@ -212,6 +214,9 @@ game = new Phaser.Game({
   physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 650 }, debug: false } },
   input: { activePointers: 4, keyboard: { capture: [32, 37, 38, 39, 40] } },
   audio: { noAudio: true }, scene: [Boot, Preload, Menu, LevelSelect, new PlatformLevel({
+    audio, reducedMotion, pause: pauseGame, complete: finishLevel,
+    begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
+  }), new Skatepark({
     audio, reducedMotion, pause: pauseGame, complete: finishLevel,
     begin: level => { overlay.replaceChildren(); playingUI(true); $('chapter').textContent = level.subtitle.toUpperCase(); $('status').textContent = level.hint; },
   }), new Snowboard({

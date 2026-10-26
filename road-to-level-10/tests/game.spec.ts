@@ -233,21 +233,32 @@ test('forest supports tree climbing, a zipline and jumping between two vines', a
   await playForest(page);
 });
 
-test('forest exit still completes after recovering on the ground without traversal counters', async ({ page }) => {
+test('river prevents bypassing the zipline on foot and permits a safe retry', async ({ page }) => {
   test.setTimeout(45000);
   await choose(page, 'Aventura entre les capçades');
   await page.keyboard.down('ArrowRight');
-  // Avoid the food enemies, then approach the exit walking along the ground.
-  for (let i = 0; i < 40; i++) {
-    await page.keyboard.press('Space'); await page.waitForTimeout(350);
-    const status = await page.locator('#status').innerText();
-    const percent = Number(status.match(/(\d+)%/)?.[1] || 0);
-    if (percent >= 81) break;
-  }
-  await expect(page.getByRole('button', { name: /Següent:/ })).toBeVisible({ timeout: 12000 });
+  await expect(page.locator('#status')).toContainText('1 ensopegades', { timeout: 7000 });
   await page.keyboard.up('ArrowRight');
   await expect(page.locator('#status')).toContainText('0 tirolines · 0 lianes');
-  await page.screenshot({ path: 'test-results/forest-ground-exit.png', fullPage: true });
+  expect(Number((await page.locator('#status').innerText()).match(/(\d+)%/)?.[1])).toBeLessThan(40);
+  await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
+  await page.screenshot({ path: 'test-results/forest-river-retry.png', fullPage: true });
+  await playForest(page);
+});
+
+test('skatepark rides four curved quarters and reaches the invitation', async ({ page }) => {
+  test.setTimeout(45000);
+  await choose(page, 'Al skatepark fins al nivell 10');
+  await page.keyboard.down('ArrowRight');
+  for (let i = 0; i < 85; i++) {
+    if (await page.getByRole('button', { name: /Descobrir la invitació/ }).isVisible()) break;
+    await page.keyboard.press('Space'); await page.waitForTimeout(250);
+    if (i === 12) await page.screenshot({ path: 'test-results/skatepark-quarter.png', fullPage: true });
+  }
+  await page.keyboard.up('ArrowRight');
+  await expect(page.locator('#status')).toContainText('4 quarters');
+  await page.getByRole('button', { name: /Descobrir la invitació/ }).click();
+  await expect(page.getByRole('heading', { name: 'En Nel arriba al nivell 10!' })).toBeVisible();
 });
 
 test('snowboard descends a slope, jumps and can complete the run', async ({ page }) => {

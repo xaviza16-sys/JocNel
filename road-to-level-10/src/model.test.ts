@@ -22,8 +22,9 @@ describe('level configuration and progression', () => {
     expect(hospital.goalY).toBe(230);
     expect(() => validateLevels([{ ...levels[1], enemies: [{ kind: 'doctor', x: 200, range: 30 }] }])).toThrow();
   });
-  it('keeps food enemies out of the early years and gives the baby real climbing obstacles', () => {
-    for (const level of levels.filter(l => l.ageMin < 4)) expect(level.enemies.every(e => e.kind === 'ball' || e.kind === 'snowball')).toBe(true);
+  it('keeps the baby peaceful and introduces yogurt and tomato in the toddler garden', () => {
+    expect(levels[0].enemies).toEqual([]);
+    expect(levels[1].enemies.map(e => e.kind)).toEqual(['yogurt', 'tomato']);
     expect(levels[0].goalY).toBeLessThan(180);
     expect(levels[0].platforms.length).toBeGreaterThan(1);
     expect(levels[0].blocks!.length).toBe(3);
@@ -31,6 +32,12 @@ describe('level configuration and progression', () => {
     expect(levels.find(l => l.id === 'nature')!.ziplines!.length).toBe(1);
     expect(() => validateLevels([{ ...levels[0], enemies: [{ kind: 'tomato', x: 200, range: 30 }] }])).toThrow();
     expect(levels.find(l => l.id === 'nature')!.ladders.length).toBeGreaterThan(0);
+  });
+  it('keeps forest checkpoints on dry banks and the zipline across the water', () => {
+    const forest = levels.find(l => l.mode === 'nature')!, water = forest.water!, zip = forest.ziplines![0];
+    expect(water.right - water.left).toBeGreaterThan(200);
+    expect(zip.x1).toBeLessThan(water.left); expect(zip.x2).toBeGreaterThan(water.right - 80);
+    expect(() => validateLevels([{ ...forest, checkpoints: [500] }])).toThrow();
   });
 });
 describe('local progress', () => {

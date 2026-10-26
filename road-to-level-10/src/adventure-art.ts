@@ -36,7 +36,7 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('hospital-walk', hospitalWalkUrl);
 }
 
-export function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false) {
+export function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false, cells?: Record<string, [number, number, number, number]>) {
   const texture = scene.textures.get(key), source = texture.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height;
   const context = canvas.getContext('2d', { willReadFrequently: true })!; context.drawImage(source, 0, 0);
@@ -44,12 +44,13 @@ export function register(scene: Phaser.Scene, key: string, frames: string[], col
   // Only transparent margins are trimmed. The supplied mockup is never sliced.
   const bounds = frames.map((name, i) => {
     const col = i % columns, row = Math.floor(i / columns);
-    const x0 = Math.round((columnEdges?.[col] ?? col / columns) * source.width);
+    const cell = cells?.[name];
+    const x0 = Math.round((cell?.[0] ?? columnEdges?.[col] ?? col / columns) * source.width);
     // The house foliage almost touches the tree in the source sheet.
-    const rightEdge = key === 'worlds' && name === 'tree' ? .717 : columnEdges?.[col + 1] ?? (col + 1) / columns;
+    const rightEdge = cell?.[2] ?? (key === 'worlds' && name === 'tree' ? .717 : columnEdges?.[col + 1] ?? (col + 1) / columns);
     const x1 = Math.round(rightEdge * source.width);
-    const y0 = Math.round((rowEdges?.[row] ?? row / rows) * source.height), y1 = Math.round((rowEdges?.[row + 1] ?? (row + 1) / rows) * source.height);
-    if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home'].includes(key)) {
+    const y0 = Math.round((cell?.[1] ?? rowEdges?.[row] ?? row / rows) * source.height), y1 = Math.round((cell?.[3] ?? rowEdges?.[row + 1] ?? (row + 1) / rows) * source.height);
+    if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home', 'nel-nature', 'nel-skate'].includes(key) || key === 'nel-snow' && !['person', 'child', 'sled-rider', 'sled'].includes(name)) {
       return { name, ...silhouetteBounds(data, canvas.width, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }) };
     }
     let l = x1, r = x0, t = y1, b = y0;

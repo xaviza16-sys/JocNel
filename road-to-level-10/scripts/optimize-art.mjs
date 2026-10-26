@@ -9,6 +9,8 @@ files.push('assets/race/nel-moto-spin-v1.png');
 files.push('assets/race/nel-moto-spin-v2.png');
 files.push('assets/adventure/hospital-family-v1.png', 'assets/adventure/hospital-corridor-v1.png');
 files.push('assets/adventure/home-bedroom-v1.png', 'assets/adventure/toddler-walk-v2.png', 'assets/adventure/hospital-walk-v2.png');
+files.push(...['nel-nature', 'nel-skate', 'nel-snow', 'garden', 'forest', 'mountain', 'skatepark', 'home-cushions'].map(name => `assets/adventure/${name}-v2.png`));
+files.push('assets/adventure/forest-trunk-v2.png');
 try {
   const page = await browser.newPage();
   for (const file of files) {

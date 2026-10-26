@@ -1,5 +1,5 @@
 export type PlatformMode = 'baby' | 'toddler' | 'hospital' | 'snow' | 'nature' | 'skate';
-export type EnemyKind = 'yogurt' | 'tomato' | 'pepper' | 'ball' | 'snowball' | 'doctor' | 'nurse';
+export type EnemyKind = 'yogurt' | 'tomato' | 'pepper' | 'ball' | 'snowball' | 'doctor' | 'nurse' | 'snow-person' | 'sled';
 export const movement: Record<PlatformMode, { speed: number; jump: number; actor: string; height: number }> = {
   baby: { speed: 80, jump: 0, actor: 'baby', height: 32 },
   toddler: { speed: 110, jump: 295, actor: 'toddler', height: 40 },

@@ -138,7 +138,7 @@
     "spawn": 64,
     "finish": 1390,
     "goalY": 172,
-    "hint": "← → Camina · ESPAI Salta. Travessa el jardí i troba la teva moto de joguina!",
+    "hint": "← → Camina · ESPAI Salta. Esquiva els iogurts i els tomàquets del jardí i troba la moto de joguina!",
     "stars": [
       {
         "x": 195,
@@ -215,9 +215,14 @@
     ],
     "enemies": [
       {
-        "kind": "ball",
+        "kind": "yogurt",
         "x": 620,
-        "range": 55
+        "range": 45
+      },
+      {
+        "kind": "tomato",
+        "x": 1060,
+        "range": 45
       }
     ],
     "ladders": []
@@ -417,7 +422,7 @@
     "spawn": 64,
     "finish": 2150,
     "goalY": 230,
-    "hint": "La pista fa baixada. ← Frena · → Accelera · ESPAI Salta els obstacles amb la taula.",
+    "hint": "La pista fa baixada. ← Frena · → Accelera · ESPAI Salta per esquivar persones i trineus.",
     "stars": [
       {
         "x": 210,
@@ -456,24 +461,34 @@
     "platforms": [],
     "enemies": [
       {
-        "kind": "snowball",
+        "kind": "snow-person",
         "x": 350,
-        "range": 42
+        "range": 20
       },
       {
-        "kind": "snowball",
-        "x": 820,
-        "range": 55
+        "kind": "sled",
+        "x": 720,
+        "range": 20
       },
       {
-        "kind": "snowball",
-        "x": 1370,
-        "range": 50
+        "kind": "snow-person",
+        "x": 1080,
+        "range": 20
       },
       {
-        "kind": "snowball",
-        "x": 1910,
-        "range": 60
+        "kind": "sled",
+        "x": 1450,
+        "range": 20
+      },
+      {
+        "kind": "snow-person",
+        "x": 1810,
+        "range": 20
+      },
+      {
+        "kind": "sled",
+        "x": 2050,
+        "range": 20
       }
     ],
     "ladders": []
@@ -488,7 +503,7 @@
     "spawn": 64,
     "finish": 1390,
     "goalY": 140,
-    "hint": "↑ Grimpa a l’arbre i agafa’t · → Travessa la tirolina i gronxa’t · ESPAI Deixa’t anar cap a la liana següent.",
+    "hint": "↑ Grimpa a l’arbre i agafa’t · Travessa el riu amb la tirolina · → Gronxa’t · ESPAI Salta entre lianes.",
     "stars": [
       {
         "x": 300,
@@ -516,8 +531,8 @@
       }
     ],
     "checkpoints": [
-      500,
-      750,
+      300,
+      755,
       1200
     ],
     "platforms": [
@@ -588,19 +603,23 @@
         "y": 20,
         "length": 110
       }
-    ]
+    ],
+    "water": {
+      "left": 390,
+      "right": 720
+    }
   },
   {
     "id": "skate",
-    "title": "Amb el monopatí fins al nivell 10",
-    "subtitle": "9–10 anys · Un últim ollie",
+    "title": "Al skatepark fins al nivell 10",
+    "subtitle": "9–10 anys · Quarters i ollies",
     "mode": "skate",
     "ageMin": 9,
     "width": 2400,
     "spawn": 64,
     "finish": 2250,
     "goalY": 230,
-    "hint": "→ Impulsa’t · ← Frena · ESPAI Fes un ollie. Supera rampes i esquiva enemics fins a l’arc de la festa.",
+    "hint": "→ Impulsa’t · ← Frena · ESPAI Fes un ollie. Agafa aire als quarters del skatepark i arriba a la festa!",
     "stars": [
       {
         "x": 220,
@@ -640,32 +659,7 @@
       1220,
       1810
     ],
-    "platforms": [
-      {
-        "x": 470,
-        "y": 205,
-        "width": 110,
-        "height": 25
-      },
-      {
-        "x": 1040,
-        "y": 194,
-        "width": 120,
-        "height": 36
-      },
-      {
-        "x": 1620,
-        "y": 197,
-        "width": 130,
-        "height": 33
-      },
-      {
-        "x": 2170,
-        "y": 201,
-        "width": 100,
-        "height": 29
-      }
-    ],
+    "platforms": [],
     "enemies": [
       {
         "kind": "tomato",

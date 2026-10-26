@@ -63,6 +63,7 @@ export class PlatformLevel extends Phaser.Scene {
   private hospitalDistance = 0;
   private hospitalLastX = 0;
   private hospitalFacingLeft = false;
+  private riverNoticeUntil = 0;
   constructor(private hooks: Hooks) { super('PlatformLevel'); }
   init(data: { level: Level }) {
     this.level = data.level; this.finished = false; this.collected = 0; this.clock = 0; this.checkpoint = data.level.spawn;
@@ -74,6 +75,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.dogArt = undefined; this.dogMounted = this.dogCrossed = false;
     this.hospitalBed = undefined;
     this.hospitalDistance = 0; this.hospitalLastX = data.level.spawn; this.hospitalFacingLeft = false;
+    this.riverNoticeUntil = 0;
     this.babyDistance = 0; this.babyLastX = data.level.spawn; this.babyFacingLeft = false;
     this.toddlerDistance = 0; this.toddlerLastX = data.level.spawn; this.toddlerFacingLeft = this.toddlerWasAirborne = false;
     this.toddlerAirSince = 0; this.toddlerLandedAt = -Infinity;
@@ -108,7 +110,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.puzzle?.blocks.forEach((block, index) => {
       const zone = this.add.zone(block.x, 230 - block.height / 2, block.width, block.height);
       this.physics.add.existing(zone, true); blockBodies.add(zone);
-      const art = this.add.image(block.x, 230, 'worlds', 'cushions').setOrigin(.5, 1).setDisplaySize(block.width, block.height).setDepth(3);
+      const art = this.add.image(block.x, 230, 'home-cushions', block.height > 30 ? 'tall' : 'low').setOrigin(.5, 1).setDisplaySize(block.width, block.height).setDepth(3);
       this.blocks.push({ zone, art, index });
     });
     this.physics.add.collider(this.player, blockBodies, undefined, normalCollisions);
@@ -179,6 +181,7 @@ export class PlatformLevel extends Phaser.Scene {
   }
   private retry() {
     if (this.clock < this.protectedUntil || this.finished) return;
+    if (this.level.water && this.player.x > this.level.water.left && this.player.x < this.level.water.right) this.riverNoticeUntil = this.clock + 5500;
     this.bumps++; this.protectedUntil = this.clock + 1800; this.climbing = undefined; this.jumpBuffer.reset();
     (this.player.body as Phaser.Physics.Arcade.Body).allowGravity = true;
     this.player.setPosition(this.checkpoint, 208).setVelocity(0, 0);
@@ -258,6 +261,13 @@ export class PlatformLevel extends Phaser.Scene {
       const pose = airborne ? 'jump' : moving ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.hospitalDistance / 17) % 8}` : 'idle';
       this.hero.setTexture(pose.startsWith('walk-') ? 'hospital-walk' : 'hospital', pose).setPosition(this.player.x, body.bottom).setFlipX(this.hospitalFacingLeft);
       this.hero.setDisplaySize(44 * this.hero.frame.realWidth / this.hero.frame.realHeight, 44);
+    } else if (this.level.mode === 'nature') {
+      const pose = this.climbing ? `climb-${this.hooks.reducedMotion ? 0 : Math.floor(this.climbTime / 170) % 4}`
+        : this.zip ? `zip-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 240) % 2}`
+        : this.vine ? `vine-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 240) % 2}`
+        : airborne ? 'climb-0' : `walk-${axis && !this.hooks.reducedMotion ? Math.floor(this.player.x / 15) % 4 : 0}`;
+      this.hero.setTexture('nel-nature', pose).setPosition(this.player.x, body.bottom).setFlipX(axis < 0);
+      this.hero.setDisplaySize(58 * this.hero.frame.realWidth / this.hero.frame.realHeight, 58);
     } else {
       const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
       this.hero.setTexture(special ? 'mechanics' : 'heroes', special || `${config.actor}-${frame}`).setPosition(this.player.x, body.bottom).setFlipX(axis < 0 && this.level.mode !== 'snow' && this.level.mode !== 'skate');
@@ -372,6 +382,7 @@ export class PlatformLevel extends Phaser.Scene {
     this.note.setText(this.zip ? 'TIROLINA' : this.vine ? `LIANA ${this.vine.index + 1}` : this.climbing || this.mantle ? '↑ GRIMPANT' : this.clock < this.protectedUntil ? 'POTS CONTINUAR!' : this.checkpoint > this.level.spawn ? '✓ PUNT DESAT' : 'INTENTS IL·LIMITATS');
     this.hint.setVisible(this.clock < 5200 || !!this.climbing || !!this.vine || !!this.zip || this.level.mode === 'baby');
     this.hint.setText(this.level.mode === 'baby' ? this.controls.actionHeld() ? 'Mantén ESPAI + →: acosta els blocs. Deixa l’espai i prem ↑ per grimpar.' : '↑ + direcció: grimpa · ESPAI + direcció: empeny · Busca la mama' : this.vine ? '→ Gronxa’t · ESPAI: deixa’t anar · Mantén ↑ per agafar la següent' : this.zip ? 'Travessant les capçades!' : this.climbing ? 'Mantén ↑ / W o GRIMPAR per pujar per l’arbre' : this.level.mode === 'nature' ? '↑: arbre / agafar-se · →: gronxar-se · ESPAI: saltar o deixar-se anar' : this.level.mode === 'skate' ? '→: impulsa’t · ESPAI: ollie · ←: frena' : '← →: mou-te · ESPAI: salta i esquiva');
+    if (this.clock < this.riverNoticeUntil) this.hint.setVisible(true).setText('El riu és massa ample! ↑ Grimpa a l’arbre i agafa la tirolina.');
     this.progressBar.clear().fillStyle(0xead7ab).fillRect(9, 33, 100, 3).fillStyle(0x6d9b70).fillRect(9, 33, pct, 3);
     document.getElementById('status')!.textContent = this.level.mode === 'baby'
       ? `NEL · ${this.jumps} salts · ${this.mantles} grimpades · ${Math.round(this.puzzle?.moved || 0)} empès · ESCALA ${this.puzzle?.readyCount || 0} A PUNT · GOS: ${this.dogCrossed ? 'FET' : 'PENDENT'} · ${pct}%`

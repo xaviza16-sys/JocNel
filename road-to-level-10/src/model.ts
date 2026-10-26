@@ -17,6 +17,7 @@ export interface Level {
   ziplines?: Zipline[];
   vines?: Vine[];
   dog?: { x: number; width: number; height: number };
+  water?: { left: number; right: number };
 }
 
 export function validateLevels(data: unknown): Level[] {
@@ -33,7 +34,7 @@ export function validateLevels(data: unknown): Level[] {
       || !Array.isArray(l.checkpoints) || !l.checkpoints.every(x => Number.isFinite(x) && x > l.spawn && x < l.finish)
       || !Array.isArray(l.platforms) || !l.platforms.every(p => p && Number.isFinite(p.x) && Number.isFinite(p.y) && p.y >= 60 && p.y < 230 && p.x - p.width / 2 > 0 && p.x + p.width / 2 < l.width && p.width > 0 && p.height > 0 && p.height <= 110)
       || !Array.isArray(l.ladders) || !l.ladders.every(p => p && Number.isFinite(p.x) && p.x > 0 && p.x < l.width && p.top >= 50 && p.top < p.bottom && p.bottom <= 230)
-      || !Array.isArray(l.enemies) || !l.enemies.every(e => e && ['yogurt', 'tomato', 'pepper', 'ball', 'snowball', 'doctor', 'nurse'].includes(e.kind) && Number.isFinite(e.x) && e.x > 80 && e.x < l.finish && Number.isFinite(e.range) && e.range > 0 && e.range <= 160 && (l.ageMin >= 4 || ['ball', 'snowball'].includes(e.kind)) && (!['doctor', 'nurse'].includes(e.kind) || l.mode === 'hospital'))
+      || !Array.isArray(l.enemies) || !l.enemies.every(e => e && ['yogurt', 'tomato', 'pepper', 'ball', 'snowball', 'doctor', 'nurse', 'snow-person', 'sled'].includes(e.kind) && Number.isFinite(e.x) && e.x > 80 && e.x < l.finish && Number.isFinite(e.range) && e.range > 0 && e.range <= 160 && (l.ageMin >= 4 || ['ball', 'snowball'].includes(e.kind) || l.mode === 'toddler' && ['yogurt', 'tomato'].includes(e.kind)) && (!['doctor', 'nurse'].includes(e.kind) || l.mode === 'hospital') && (!['snow-person', 'sled'].includes(e.kind) || l.mode === 'snow'))
       || l.mode === 'moto' && !validRace(l.race)) {
       throw new Error('Configuració de nivell no vàlida');
     }
@@ -41,6 +42,7 @@ export function validateLevels(data: unknown): Level[] {
     if (l.ziplines && !l.ziplines.every(z => z && [z.x1, z.x2, z.y1, z.y2].every(Number.isFinite) && z.x1 > 0 && z.x2 > z.x1 && z.x2 < l.finish && z.y1 >= 50 && z.y2 <= 200)) throw new Error('Tirolines no vàlides');
     if (l.vines && !l.vines.every(v => v && [v.x, v.y, v.length].every(Number.isFinite) && v.x > 0 && v.x < l.finish && v.y >= 0 && v.length > 40 && v.length <= 160)) throw new Error('Lianes no vàlides');
     if (l.dog && (l.mode !== 'baby' || ![l.dog.x, l.dog.width, l.dog.height].every(Number.isFinite) || l.dog.x <= l.spawn || l.dog.x + l.dog.width / 2 >= l.finish || l.dog.width < 30 || l.dog.height <= 0 || l.dog.height > 32)) throw new Error('Configuració del gos no vàlida');
+    if (l.water && (l.mode !== 'nature' || !Number.isFinite(l.water.left) || !Number.isFinite(l.water.right) || l.water.left <= l.spawn || l.water.right <= l.water.left || l.water.right >= l.finish || l.checkpoints.some(x => x > l.water!.left && x < l.water!.right))) throw new Error('Tram d’aigua no vàlid');
     ids.add(l.id);
   }
   return data as Level[];

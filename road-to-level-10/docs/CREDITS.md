@@ -1,5 +1,7 @@
 # Crèdits
 
+- Nous sprites de snowboard, escalada i skate basats en les fotografies aportades, nous fons de jardí/bosc/muntanya/skatepark, troncs i coixins sàlvia: generats amb l’eina integrada `image_gen`. Fitxers i prompts a `docs/NEU_BOSC_SKATEPARK.md`.
+
 - Casa amb parets blanques i mobles clars, mare al llit i nous cicles de passes dels nivells 2 i 4: art generat amb l’eina integrada `image_gen`, basat en els sprites familiars existents. Recursos i prompts a `docs/CASA_I_ANIMACIONS.md`.
 
 - Hospital, Nel amb samarreta de pingüí i pinya, mama i germanet: sprites i decorat nous generats amb l’eina integrada `image_gen` a partir de les fotografies de referència. Recursos finals i prompts a `docs/HOSPITAL_NEL.md`.

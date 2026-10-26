@@ -19,12 +19,12 @@ Systems: InputManager, PlayerController, VehicleController, EnemyAI, Collectible
 Levels defined in `src/data/levels.json`; schemas validated with TypeScript. Store progression in localStorage only.
 
 ## Narrative and mechanics
-- Ages 0–3: no food enemies. Baby crawls; toddler learns walking and jumping.
+- Baby has no enemies and crawls/climbs without jumping. Per the latest explicit user request, the toddler garden now introduces yogurt and tomato enemies in place of the ball; toddler can walk and jump. This supersedes the initial early-age food-enemy restriction for that chapter only.
 - Baby home uses white walls and Scandinavian white/oak furniture. Keep both push puzzles and the dog, then climb three fixed steps to the bedroom landing and the bed where mother waits. Final hug takes place in the bed. Walking cycles in chapters 2 and 4 advance with grounded distance, with isolated sprite bounds to exclude neighboring fragments. Hospital corridor edges must remain continuous.
 - Moto unlocks in 'Camino a la guarde' (roughly age 2–4). The exact real toy bike has a blue body, red circular center, gray T handlebar with red grips, black wheels with pale gray hubs. Recreate its familiar neighborhood street without publishing an exact address.
 - The motorcycle chapter follows the promenade photograph: teal jacket and gray trousers, pale plane-tree trunks, gray pavers and garden walls. Only road-arrow boosts remain. Leaves slow, pedestrians with children cause a fall requiring Space/touch to stand up, and dog poop causes a brief banana-style spin followed by automatic recovery without restarting. The latest explicit user correction replaces the earlier poop restart requirement.
 - The fourth chapter is now a Covid-era hospital: Nel avoids masked doctors and nurses to meet his newborn brother with their mother. This replaces the school chapter and its food enemies. Keep the legacy saved level ID `school`; use mode `hospital`. Food enemies remain in later forest/skate chapters.
-- Snow/sled, nature/climbing and skate stages introduce mechanics incrementally. Skate unlocks at 9–10: roll, push, ollie, land; a final food boss rush can be optional and easy.
+- Snowboard uses photo-inspired blue jacket, navy/yellow helmet and yellow board; avoid people and sleds. Forest tree-climbing sprites have no rope. The river below the zipline removes the ground shortcut; fall recovery stays on dry banks. Skate is a concrete skatepark with four curved quarters, red helmet and pads, push, ollie, airtime and landing. See `docs/NEU_BOSC_SKATEPARK.md` for resources, prompts and geometry.
 - Final screen reveals party invitation, RSVP button with configurable WhatsApp deep link; invitation always reachable from menu. Never hardcode real event data or personal identifying details.
 
 ## Engineering requirements

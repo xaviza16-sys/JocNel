@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { Level } from './model';
 import { prop } from './adventure-art';
+import { outdoorBackdrop } from './outdoor-art';
 
 export function adventureWorld(scene: Phaser.Scene, level: Level) {
   const { mode, width } = level;
@@ -18,10 +19,10 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     const floor = scene.add.zone(width / 2, 250, width, 40);
     scene.physics.add.existing(floor, true); return floor;
   }
-  const g = scene.add.graphics().setDepth(-4);
+  const g = scene.add.graphics().setDepth(-3);
   const rect = (x: number, y: number, w: number, h: number, c: number) => g.fillStyle(c).fillRect(x, y, w, h);
   const snowy = mode === 'snow', inside = mode === 'baby', forest = mode === 'nature';
-  rect(0, 0, width, 270, inside ? 0xfaf9f5 : snowy ? 0xc6e8f0 : forest ? 0xb3d2b2 : 0xb5dcdd);
+  if (mode !== 'toddler' && !forest) rect(0, 0, width, 270, inside ? 0xfaf9f5 : snowy ? 0xc6e8f0 : 0xb5dcdd);
   if (inside) {
     rect(0, 222, width, 8, 0xe2d6c4);
     for (const x of [85, 710, 1450]) {
@@ -38,6 +39,8 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     rect(1538, 146, width - 1538, 84, 0xf0ede7); rect(1538, 146, width - 1538, 5, 0xc7aa81);
     scene.add.text(1490, 93, 'HABITACIÓ →', { fontFamily: 'monospace', fontSize: '7px', color: '#566558' }).setOrigin(.5).setDepth(1);
   } else {
+    if (mode === 'toddler' || forest) outdoorBackdrop(scene, forest ? 'forest-bg' : 'garden-bg', width);
+    else {
     const distant = scene.add.graphics().setScrollFactor(.18, 1).setDepth(-3);
     distant.fillStyle(snowy ? 0x92b8c5 : forest ? 0x799f85 : 0x97bda4);
     for (let x = -100; x < width; x += 190) distant.fillTriangle(x, 220, x + 140, snowy ? 38 : 92, x + 300, 220);
@@ -47,11 +50,12 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
     }
     const background = scene.add.container(0, 0).setDepth(-2).setScrollFactor(forest ? 1 : .55, 1).setAlpha(forest ? .4 : 1);
     for (let x = 80; x < width; x += snowy || forest ? 125 : 230) {
-      const frame = snowy ? 'fir' : forest || mode === 'toddler' ? 'tree' : mode === 'skate' ? 'bench' : 'school';
+      const frame = snowy ? 'fir' : mode === 'skate' ? 'bench' : 'school';
       const item = prop(scene, frame, x, 230, snowy || forest ? 104 : 125, -2);
       background.add(item);
     }
     if (snowy) prop(scene, 'cabin', level.finish + 25, 230, 130);
+    }
     if (forest) {
       // The lookout uses the final physical deck, rather than an unrelated
       // tower sprite whose illustrated floor sits at a different position.
@@ -69,6 +73,16 @@ export function adventureWorld(scene: Phaser.Scene, level: Level) {
   for (let x = 0; x < width; x += 32) {
     rect(x, 242, 1, 28, inside ? 0xaf805e : 0x718275);
     if (!inside) rect(x + 10, 254, 5, 3, snowy ? 0xc5d8dc : 0xb6a07c);
+  }
+  if (level.water) {
+    const { left, right } = level.water;
+    rect(left, 222, right - left, 48, 0x398d9c);
+    for (let x = left; x < right; x += 23) { rect(x, 226, Math.min(13, right - x), 2, 0xa4e3df); rect(x + 3, 245, Math.max(0, Math.min(9, right - x - 3)), 2, 0x65b9c3); }
+    const banks = scene.physics.add.staticGroup();
+    for (const [a, b] of [[0, left], [right, width]]) {
+      const bank = scene.add.zone((a + b) / 2, 250, b - a, 40); scene.physics.add.existing(bank, true); banks.add(bank);
+    }
+    return banks;
   }
   const floor = scene.add.zone(width / 2, 250, width, 40); scene.physics.add.existing(floor, true); return floor;
 }
@@ -106,7 +120,7 @@ export function platformArt(scene: Phaser.Scene, level: Level, p: Level['platfor
 }
 
 export function forestTree(scene: Phaser.Scene, x: number, canopyTop: number, ground: number) {
-  const tree = prop(scene, 'tree', x, ground, 130, -1);
+  const tree = scene.add.image(x, ground, 'forest-trunk', 'trunk').setOrigin(.5, 1).setDepth(-1);
   const height = ground - canopyTop;
   tree.setDisplaySize(height * tree.frame.width / tree.frame.height, height);
   // Preserve the illustrated trunk and proportions; the tree shares the
