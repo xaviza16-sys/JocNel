@@ -230,7 +230,7 @@
   {
     "id": "moto",
     "title": "Cap a l’escola bressol!",
-    "subtitle": "2–4 anys · La primera moto",
+    "subtitle": "2–3 anys · Ràpid que anem tard!",
     "mode": "moto",
     "width": 1920,
     "spawn": 64,
@@ -347,15 +347,15 @@
   },
   {
     "id": "school",
-    "title": "Coneixem el germanet!",
-    "subtitle": "4–6 anys · Una visita molt especial",
+    "title": "Ja ha nascut el IUC !",
+    "subtitle": "4–6 anys · Anem a coneixer el Iuc",
     "mode": "hospital",
     "ageMin": 4,
     "width": 1660,
     "spawn": 64,
     "finish": 1490,
     "goalY": 230,
-    "hint": "← → Camina · ESPAI Salta per esquivar metges i infermeres amb mascareta. La mama i el teu germanet t’esperen al final!",
+    "hint": "← → Camina · ESPAI Salta per esquivar metges i infermeres amb mascareta. La mama i el Iuc t’esperen al final!",
     "stars": [
       {
         "x": 200,
@@ -414,8 +414,8 @@
   },
   {
     "id": "snow",
-    "title": "Surf de neu: tot de baixada!",
-    "subtitle": "6–7 anys · Surf de neu a la muntanya",
+    "title": "Snow: Anem a la Neu!",
+    "subtitle": "5–6 anys · A per la negre!",
     "mode": "snow",
     "ageMin": 6,
     "width": 2300,
@@ -495,8 +495,8 @@
   },
   {
     "id": "nature",
-    "title": "Aventura entre les capçades",
-    "subtitle": "7–9 anys · Arbres, tirolines i lianes",
+    "title": "Anem a la selva de l'aventura",
+    "subtitle": "6–7 anys · Arbres, tirolines i lianes",
     "mode": "nature",
     "ageMin": 7,
     "width": 1600,
@@ -611,8 +611,8 @@
   },
   {
     "id": "skate",
-    "title": "Al skatepark fins al nivell 10",
-    "subtitle": "9–10 anys · Quarters i ollies",
+    "title": "A tope amb l'skate!",
+    "subtitle": "8–10 anys · Quarters i ollies",
     "mode": "skate",
     "ageMin": 9,
     "width": 2400,

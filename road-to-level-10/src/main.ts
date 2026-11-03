@@ -278,7 +278,7 @@ class Invitation extends Phaser.Scene {
   create() {
     playingUI(false);
     audio.playTheme('party');
-    const { root, actions } = panel('LA PROPERA GRAN AVENTURA ÉS JUNTS', invitation.childDisplayName ? `En ${invitation.childDisplayName} arriba al nivell 10!` : 'Ens espera una gran festa!', 'Deu anys de records es mereixen una altra aventura. I la volem viure amb tu.', true);
+    const { root, actions } = panel('VINDRAS A LA PIJAMADA DEL ', invitation.childDisplayName ? `En ${invitation.childDisplayName} arriba al nivell 10!` : 'Ens espera una gran festa!', 'Deu anys de records es mereixen una altra aventura. I la volem viure amb tu.', true);
     const details = document.createElement('dl'); details.className = 'invitation-details';
     for (const [label, value] of [['DIA', invitation.date], ['HORA', invitation.time], ['LLOC', invitation.venue]]) {
       const group = document.createElement('div'); const dt = document.createElement('dt'); dt.textContent = label;
