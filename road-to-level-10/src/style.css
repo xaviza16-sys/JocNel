@@ -105,3 +105,29 @@
   .panel { padding: 80px 18px 160px; }
   .level-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Arcade attract screen: the invitation floats over the neon night drawn by the game. */
+.panel.invitation { background: radial-gradient(ellipse 60% 62% at 50% 47%, #0a0622e8 0 52%, #0a062299 72%, #0a062000 100%); color: #efe8ff; }
+.panel.invitation .eyebrow { color: #ffd84d; font: 800 clamp(8px, 1.1vw, 12px) ui-monospace, 'Courier New', monospace; letter-spacing: 3px; text-shadow: 2px 2px 0 #b8247a; }
+.panel.invitation h2 { font-family: ui-monospace, 'Courier New', monospace; font-weight: 800; font-size: clamp(18px, 3.7vw, 38px); letter-spacing: 0; color: #fff; text-shadow: 3px 3px 0 #ff3fa4, 6px 6px 0 #3b1d8f; }
+.panel.invitation p { color: #cfc4ff; }
+.panel.invitation .invitation-details { flex-wrap: wrap; justify-content: center; gap: 10px; }
+.panel.invitation .invitation-details div { min-width: 96px; max-width: 260px; padding: 7px 11px; border: 2px solid #4ef2ff; border-radius: 3px; background: #0d0a2ccc; box-shadow: 0 0 0 2px #0d0a2c, 0 0 14px #4ef2ff55; }
+.panel.invitation .invitation-details dt { color: #ffd84d; font: 800 10px ui-monospace, monospace; letter-spacing: 2px; }
+.panel.invitation .invitation-details dd { color: #fff; font: 700 13px ui-monospace, monospace; line-height: 1.35; text-wrap: balance; }
+.panel.invitation .press-start { margin: 0 0 12px; color: #4ef2ff; font: 800 clamp(9px, 1.2vw, 12px) ui-monospace, monospace; letter-spacing: 1px; text-shadow: 0 0 8px #4ef2ff99; animation: arcade-blink 1.1s steps(1) infinite; }
+.panel.invitation .primary, .panel.invitation .secondary { border-radius: 3px; border: 2px solid #ffd84d; background: #ff3fa4; color: #fff; font-family: ui-monospace, monospace; font-weight: 800; letter-spacing: .5px; box-shadow: 0 4px 0 #8a1457; transition: transform 60ms, box-shadow 60ms; }
+.panel.invitation .secondary { border-color: #4ef2ff; background: #0d0a2c; color: #4ef2ff; box-shadow: 0 4px 0 #1c5c7a; }
+.panel.invitation .primary:hover, .panel.invitation .secondary:hover { transform: translateY(-1px); box-shadow: 0 5px 0 #8a1457; }
+.panel.invitation .secondary:hover { box-shadow: 0 5px 0 #1c5c7a; }
+.panel.invitation .primary:active, .panel.invitation .secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a1457; }
+.panel.invitation small { color: #b9b0e8; }
+@keyframes arcade-blink { 50% { opacity: 0; } }
+@media (max-width: 650px) { .panel.invitation .invitation-details dd { font-size: 10px; } .panel.invitation .invitation-details div { padding: 5px 8px; min-width: 76px; } }
+@media (prefers-reduced-motion: reduce) { .panel.invitation .press-start { animation: none; } }
+
+/* A real photo on the album page after each chapter, framed like a polaroid. */
+.chapter-photo { margin: 2px 0 4px; padding: 6px 6px 4px; background: #fffdf4; border: 1px solid #d8d1b5; box-shadow: 0 6px 14px #23413a33; transform: rotate(-2deg); flex-shrink: 0; }
+.chapter-photo img { display: block; width: auto; height: clamp(70px, 24vh, 170px); max-width: min(60vw, 260px); object-fit: cover; }
+.chapter-photo figcaption { margin-top: 4px; font-size: 9px; color: #6b6a55; letter-spacing: .5px; }
+@media (max-width: 650px) { .chapter-photo img { height: clamp(54px, 18vh, 110px); } }

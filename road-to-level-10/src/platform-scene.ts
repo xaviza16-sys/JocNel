@@ -64,12 +64,23 @@ export class PlatformLevel extends Phaser.Scene {
   private hospitalDistance = 0;
   private hospitalLastX = 0;
   private hospitalFacingLeft = false;
+  private hospitalWasAirborne = false;
+  private hospitalLandedAt = -Infinity;
+  private natureDistance = 0;
+  private natureLastX = 0;
+  private natureFacingLeft = false;
   private riverNoticeUntil = 0;
   constructor(private hooks: Hooks) { super('PlatformLevel'); }
   init(data: { level: Level }) {
     this.level = data.level; this.finished = false; this.collected = 0; this.clock = 0; this.checkpoint = data.level.spawn;
     this.protectedUntil = 0; this.climbing = undefined; this.hazards = []; this.jumpBuffer.reset();
     this.jumps = this.bumps = this.climbTime = this.bonusUntil = 0;
+    // Replays start facing right with fresh stride and landing timers.
+    this.babyDistance = this.toddlerDistance = this.hospitalDistance = this.natureDistance = 0;
+    this.babyLastX = this.toddlerLastX = this.hospitalLastX = this.natureLastX = data.level.spawn;
+    this.babyFacingLeft = this.toddlerFacingLeft = this.hospitalFacingLeft = this.natureFacingLeft = false;
+    this.toddlerWasAirborne = this.hospitalWasAirborne = false;
+    this.toddlerAirSince = 0; this.toddlerLandedAt = this.hospitalLandedAt = -Infinity;
     this.puzzle = data.level.mode === 'baby' ? new BabyPuzzle(data.level.blocks || []) : undefined;
     this.blocks = []; this.mantle = undefined; this.mantles = 0; this.zip = this.vine = undefined;
     this.zipped.clear(); this.swung.clear(); this.grabAfter = this.momentumUntil = this.lastPushSound = 0; this.mother = undefined;
@@ -259,16 +270,26 @@ export class PlatformLevel extends Phaser.Scene {
       if (!airborne && travelled < 20) this.hospitalDistance += travelled;
       this.hospitalLastX = this.player.x;
       if (axis) this.hospitalFacingLeft = axis < 0;
+      if (!airborne && this.hospitalWasAirborne) this.hospitalLandedAt = this.clock;
+      this.hospitalWasAirborne = airborne;
       const moving = travelled > .01 && !!axis;
-      const pose = airborne ? 'jump' : moving ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.hospitalDistance / 17) % 8}` : 'idle';
+      // A short crouch on touchdown keeps jumps from snapping straight to a stride.
+      const landing = !this.hooks.reducedMotion && this.clock - this.hospitalLandedAt < 130;
+      const pose = airborne ? 'jump' : landing ? 'land' : moving ? `walk-${this.hooks.reducedMotion ? 0 : Math.floor(this.hospitalDistance / 17) % 8}` : 'idle';
       this.hero.setTexture(pose.startsWith('walk-') ? 'hospital-walk' : 'hospital', pose).setPosition(this.player.x, body.bottom).setFlipX(this.hospitalFacingLeft);
       this.hero.setDisplaySize(44 * this.hero.frame.realWidth / this.hero.frame.realHeight, 44);
     } else if (this.level.mode === 'nature') {
+      // Stride follows distance walked, so walking left plays the cycle
+      // forwards too, and Nel keeps facing her last direction when stopping.
+      const travelled = Math.abs(this.player.x - this.natureLastX);
+      if (!airborne && travelled < 20) this.natureDistance += travelled;
+      this.natureLastX = this.player.x;
+      if (axis) this.natureFacingLeft = axis < 0;
       const pose = this.climbing ? `climb-${this.hooks.reducedMotion ? 0 : Math.floor(this.climbTime / 170) % 4}`
         : this.zip ? `zip-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 240) % 2}`
         : this.vine ? `vine-${this.hooks.reducedMotion ? 0 : Math.floor(this.clock / 240) % 2}`
-        : airborne ? 'climb-0' : `walk-${axis && !this.hooks.reducedMotion ? Math.floor(this.player.x / 15) % 4 : 0}`;
-      this.hero.setTexture('nel-nature', pose).setPosition(this.player.x, body.bottom).setFlipX(axis < 0);
+        : airborne ? 'climb-0' : `walk-${axis && !this.hooks.reducedMotion ? Math.floor(this.natureDistance / 15) % 4 : 0}`;
+      this.hero.setTexture('nel-nature', pose).setPosition(this.player.x, body.bottom).setFlipX(this.natureFacingLeft && !this.climbing && !this.zip && !this.vine);
       this.hero.setDisplaySize(58 * this.hero.frame.realWidth / this.hero.frame.realHeight, 58);
     } else {
       const special = this.zip ? 'zip' : this.vine ? 'vine' : undefined;
@@ -297,7 +318,9 @@ export class PlatformLevel extends Phaser.Scene {
       enemy.art.setFrame(['ball', 'snowball'].includes(enemy.kind) ? enemy.kind : `${enemy.kind}-${animation}`);
       enemy.art.setPosition(enemy.body.x, eb.bottom).setFlipX(staff ? enemy.direction < 0 : enemy.direction > 0).setTint(intent.warn ? 0xffd59b : 0xffffff);
       const h = staff ? 58 : ['ball', 'snowball'].includes(enemy.kind) ? 21 : 29;
-      enemy.art.setDisplaySize(h * enemy.art.frame.realWidth / enemy.art.frame.realHeight, h);
+      if (staff || enemy.kind === 'ball' || enemy.kind === 'snowball') enemy.art.setDisplaySize(h * enemy.art.frame.realWidth / enemy.art.frame.realHeight, h);
+      // Food poses share a canvas: one scale keeps the body steady between poses.
+      else enemy.art.setScale(h / this.textures.getFrame('foods', `${enemy.kind}-0`).height);
       if (enemy.kind === 'ball' || enemy.kind === 'snowball') enemy.art.setOrigin(.5, .5).setY(eb.bottom - h / 2).setAngle(this.hooks.reducedMotion ? 0 : enemy.body.x * 3);
     });
     for (const point of this.level.checkpoints) if (this.player.x >= point && point > this.checkpoint) { this.checkpoint = point; this.hooks.audio.sfx('checkpoint'); }

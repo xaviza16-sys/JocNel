@@ -11,6 +11,7 @@ import { PlatformLevel } from './platform-scene';
 import { Snowboard } from './snowboard-scene';
 import { Skatepark } from './skate-scene';
 import { loadOutdoorArt, createOutdoorFrames } from './outdoor-art';
+import { arcadeBackdrop } from './arcade-backdrop';
 import './style.css';
 import { ScoreManager, runPoints, speedPoints, scoreText, type ScoreStats } from './scores';
 import { controlCaption } from './control-ui';
@@ -38,6 +39,10 @@ function recordScore(level: Level, stats: ScoreStats) {
 const progress = saves.read();
 const audio = new AudioManager(); audio.muted = progress.muted;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Optional real photos behind each chapter's pixel art, named by level id
+// (assets/photos/baby.jpg, toddler.webp…). Missing photos simply don't show.
+const chapterPhotos = import.meta.glob('../assets/photos/*.{jpg,jpeg,png,webp}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const chapterPhoto = (id: string) => Object.entries(chapterPhotos).find(([path]) => path.split('/').pop()!.replace(/\.\w+$/, '') === id)?.[1];
 const spriteUrls = import.meta.glob('../assets/sprites/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 let activeLevel = levels[0];
 let game: Phaser.Game;
@@ -158,7 +163,15 @@ function finishLevel(level: Level, copy: string) {
   const heading = next ? level.id === 'baby' ? 'La teva primera aventura!' : 'Un pas més!' : 'Has arribat al nivell 10, Nel!';
   if (!next) { celebrate(); audio.playTheme('party'); }
   const showResult = () => {
-    const { actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, `${copy} Temps: ${Math.floor(lastStats.elapsedSeconds || 0)} s · Bonus de rapidesa: +${speedPoints({ ...lastStats, complete: true })}. Total: ${scores.total.toLocaleString('ca')} punts.`, true);
+    const { root, actions } = panel(next ? 'UN RECORD MÉS A L’ÀLBUM' : 'LA PROPERA AVENTURA ÉS JUNTS', heading, `${copy} Temps: ${Math.floor(lastStats.elapsedSeconds || 0)} s · Bonus de rapidesa: +${speedPoints({ ...lastStats, complete: true })}. Total: ${scores.total.toLocaleString('ca')} punts.`, true);
+    const photo = chapterPhoto(level.id);
+    if (photo) {
+      // The real moment this chapter's pixel art was drawn from.
+      const figure = document.createElement('figure'); figure.className = 'chapter-photo';
+      const image = document.createElement('img'); image.src = photo; image.alt = `En Nel de veritat: ${level.title}`; image.decoding = 'async';
+      const caption = document.createElement('figcaption'); caption.textContent = level.subtitle;
+      figure.append(image, caption); root.insertBefore(figure, root.querySelector('h2'));
+    }
     actions.append(button(next ? `Següent: ${next.title} →` : 'Descobrir la invitació →', () => next ? startLevel(next) : showInvitation()), button('Triar capítol', () => { game.scene.stop(gameplayKey()); game.scene.start('LevelSelect'); }, true));
   };
   window.clearTimeout(completionTimer); completionTimer = undefined;
@@ -278,6 +291,7 @@ class Invitation extends Phaser.Scene {
   create() {
     playingUI(false);
     audio.playTheme('party');
+    arcadeBackdrop(this, reducedMotion);
     const { root, actions } = panel('VINDRAS A LA PIJAMADA DEL ', invitation.childDisplayName ? `En ${invitation.childDisplayName} arriba al nivell 10!` : 'Ens espera una gran festa!', 'Deu anys de records es mereixen una altra aventura. I la volem viure amb tu.', true);
     const details = document.createElement('dl'); details.className = 'invitation-details';
     for (const [label, value] of [['DIA', invitation.date], ['HORA', invitation.time], ['LLOC', invitation.venue]]) {
@@ -285,6 +299,9 @@ class Invitation extends Phaser.Scene {
       const dd = document.createElement('dd'); dd.textContent = value || 'Per confirmar'; group.append(dt, dd); details.append(group);
     }
     root.insertBefore(details, actions);
+    root.classList.add('invitation');
+    const player2 = document.createElement('span'); player2.className = 'press-start'; player2.textContent = '★ JUGADOR 2, UNEIX-TE A LA PARTIDA! ★';
+    root.insertBefore(player2, actions);
     const url = whatsAppUrl(invitation.rsvpWhatsApp);
     if (url) {
       const link = document.createElement('a'); link.className = 'primary'; link.textContent = 'Confirmar per WhatsApp ↗'; link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; actions.append(link);

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { silhouetteBounds } from './sprite-bounds';
+import { silhouetteBounds, sheetBlobs, ownedBounds, type SheetBlob } from './sprite-bounds';
 import actorsUrl from '../assets/adventure/evolution-v2.webp';
 import enemiesUrl from '../assets/adventure/enemies-v1.webp';
 import worldsUrl from '../assets/adventure/worlds-v1.webp';
@@ -36,11 +36,16 @@ export function loadAdventureArt(scene: Phaser.Scene) {
   scene.load.image('hospital-walk', hospitalWalkUrl);
 }
 
+const blobCache = new Map<string, SheetBlob[]>();
 export function register(scene: Phaser.Scene, key: string, frames: string[], columns: number, rows: number, rowEdges?: number[], columnEdges?: number[], aligned = false, cells?: Record<string, [number, number, number, number]>) {
   const texture = scene.textures.get(key), source = texture.getSourceImage() as HTMLImageElement;
   const canvas = document.createElement('canvas'); canvas.width = source.width; canvas.height = source.height;
   const context = canvas.getContext('2d', { willReadFrequently: true })!; context.drawImage(source, 0, 0);
   const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+  // Animation strips are measured by whole drawings: a frame never shows a
+  // neighbour's wheel and never loses its own hair or soles at a cell edge.
+  let blobs = blobCache.get(key);
+  if (!blobs) blobCache.set(key, blobs = sheetBlobs(data, canvas.width, canvas.height));
   // Only transparent margins are trimmed. The supplied mockup is never sliced.
   const bounds = frames.map((name, i) => {
     const col = i % columns, row = Math.floor(i / columns);
@@ -50,6 +55,8 @@ export function register(scene: Phaser.Scene, key: string, frames: string[], col
     const rightEdge = cell?.[2] ?? (key === 'worlds' && name === 'tree' ? .717 : columnEdges?.[col + 1] ?? (col + 1) / columns);
     const x1 = Math.round(rightEdge * source.width);
     const y0 = Math.round((cell?.[1] ?? rowEdges?.[row] ?? row / rows) * source.height), y1 = Math.round((cell?.[3] ?? rowEdges?.[row + 1] ?? (row + 1) / rows) * source.height);
+    const owned = blobs && ownedBounds(blobs, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 });
+    if (owned) return { name, ...owned };
     if (['baby-nel', 'toddler-nel', 'toddler-walk', 'hospital-walk', 'hospital', 'home', 'nel-nature', 'nel-skate'].includes(key) || key === 'nel-snow' && !['person', 'child', 'sled-rider', 'sled'].includes(name)) {
       return { name, ...silhouetteBounds(data, canvas.width, { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }) };
     }
@@ -71,7 +78,10 @@ export function register(scene: Phaser.Scene, key: string, frames: string[], col
 }
 export function createAdventureFrames(scene: Phaser.Scene) {
   register(scene, 'heroes', actorRows.flatMap(row => [0, 1, 2, 3].map(i => `${row}-${i}`)), 4, 6, [0, .16, .32, .49, .66, .829, 1]);
-  register(scene, 'foods', enemyFrames, 4, 4);
+  // Each enemy row shares one canvas so walking, warning and jump poses keep
+  // the same body scale and floor contact; the bottom row holds loose items.
+  for (let row = 0; row < 3; row++) register(scene, 'foods', enemyFrames.slice(row * 4, row * 4 + 4), 4, 1, [row / 4, (row + 1) / 4], undefined, true);
+  register(scene, 'foods', enemyFrames.slice(12), 4, 1, [.75, 1]);
   register(scene, 'worlds', propFrames, 4, 4, [0, .29, .55, .79, 1], [0, .25, .5, .73, 1]);
   register(scene, 'mechanics', ['baby-climb', 'baby-push', 'snowboard-ride', 'snowboard-air', 'mother', 'hug', 'zip', 'vine'], 4, 2);
   // Version 2 keeps the photographed glasses, clothes and dog markings.

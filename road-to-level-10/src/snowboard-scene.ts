@@ -22,12 +22,14 @@ export class Snowboard extends Phaser.Scene {
   private checkpoint = 64;
   private protectedUntil = 0;
   private elapsed = 0;
+  private tilt = 11.5;
+  private paintedAt = 0;
   private bumps = 0;
   private collected = 0;
   constructor(private hooks: Hooks) { super('Snowboard'); }
   init(data: { level: Level }) {
     this.level = data.level; this.board = new SnowboardController(); this.finished = false;
-    this.stars = []; this.obstacles = []; this.checkpoint = 64; this.elapsed = this.bumps = this.collected = this.protectedUntil = this.landingUntil = 0;
+    this.stars = []; this.obstacles = []; this.checkpoint = 64; this.elapsed = this.bumps = this.collected = this.protectedUntil = this.landingUntil = this.paintedAt = 0; this.tilt = 11.5;
   }
   create() {
     this.hooks.begin(this.level);
@@ -98,7 +100,7 @@ export class Snowboard extends Phaser.Scene {
     this.target.setPosition(b.x, b.feet - 42);
     const pose = b.airborne ? b.vy < -170 ? 'takeoff' : 'air' : this.elapsed < this.landingUntil ? 'land' : `ride-${this.hooks.reducedMotion ? 0 : Math.floor(this.elapsed / 200) % 4}`;
     this.rider.setFrame(pose).setPosition(b.x, b.feet + 2);
-    this.rider.setDisplaySize(52 * this.rider.frame.realWidth / this.rider.frame.realHeight, 52).setAngle(this.hooks.reducedMotion ? 0 : b.airborne ? -8 : 11.5).setTint(this.elapsed < this.protectedUntil ? 0xcce9f1 : 0xffffff);
+    this.rider.setDisplaySize(52 * this.rider.frame.realWidth / this.rider.frame.realHeight, 52).setAngle(this.easeTilt(this.hooks.reducedMotion ? 0 : b.airborne ? -8 : 11.5)).setTint(this.elapsed < this.protectedUntil ? 0xcce9f1 : 0xffffff);
     this.track.clear();
     if (!b.airborne && !this.hooks.reducedMotion) {
       this.track.lineStyle(1, 0xb3d2d6).lineBetween(b.x - 30, snowGround(b.x - 30), b.x - 10, snowGround(b.x - 10));
@@ -109,6 +111,12 @@ export class Snowboard extends Phaser.Scene {
     this.hud.setText(`★ ${this.collected}/${this.stars.length}  ·  ${Math.round(b.speed)} km/h  ·  ${pct}%`);
     this.hint.setVisible(this.elapsed < 4500);
     document.getElementById('status')!.textContent = `SURF DE NEU · ${b.jumps} salts · ${this.bumps} ensopegades · Baixada ${Math.round(snowGround(b.x) - snowGround(64))} m · ${pct}%`;
+  }
+  // Leaning eases over ~70 ms: take-offs and landings no longer snap the board.
+  private easeTilt(target: number) {
+    const dt = this.elapsed - this.paintedAt; this.paintedAt = this.elapsed;
+    this.tilt = this.hooks.reducedMotion ? target : this.tilt + (target - this.tilt) * (1 - Math.exp(-dt / 70));
+    return this.tilt;
   }
   complete() {
     this.finished = true; this.scene.pause();

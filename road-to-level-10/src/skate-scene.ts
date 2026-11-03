@@ -17,6 +17,8 @@ export class Skatepark extends Phaser.Scene {
   private hud!: Phaser.GameObjects.Text;
   private hint!: Phaser.GameObjects.Text;
   private elapsed = 0;
+  private tilt = 0;
+  private paintedAt = 0;
   private protectedUntil = 0;
   private checkpoint = 64;
   private bumps = 0;
@@ -27,7 +29,7 @@ export class Skatepark extends Phaser.Scene {
   constructor(private hooks: Hooks) { super('Skatepark'); }
   init(data: { level: Level }) {
     this.level = data.level; this.board = new SkateController(); this.finished = false;
-    this.elapsed = this.protectedUntil = this.bumps = this.collected = this.landingUntil = 0;
+    this.elapsed = this.protectedUntil = this.bumps = this.collected = this.landingUntil = this.paintedAt = this.tilt = 0;
     this.checkpoint = data.level.spawn; this.stars = []; this.hazards = [];
   }
   create() {
@@ -48,7 +50,9 @@ export class Skatepark extends Phaser.Scene {
       this.stars.push({ image, taken: false });
     });
     this.level.enemies.forEach(e => {
-      const image = this.add.image(e.x, skateGround(e.x), 'foods', `${e.kind}-0`).setOrigin(.5, 1).setDepth(3).setDisplaySize(27, 29);
+      const image = this.add.image(e.x, skateGround(e.x), 'foods', `${e.kind}-0`).setOrigin(.5, 1).setDepth(3);
+      // Poses share one canvas: scale by the drawn body, not the padded frame.
+      image.setScale(27 / image.frame.width, 29 / image.frame.height);
       this.hazards.push({ image, anchor: e.x, range: Math.min(e.range, 35), kind: e.kind });
     });
     prop(this, 'party', this.level.finish + 18, skateGround(this.level.finish), 80, 1);
@@ -89,7 +93,7 @@ export class Skatepark extends Phaser.Scene {
   private paint() {
     const b = this.board, slope = skateSlope(b.x), axis = this.controls.axis();
     const pose = this.hooks.reducedMotion ? b.airborne ? 'ollie' : 'ride' : b.airborne ? b.quarters.size && b.vy < 0 ? 'air' : 'ollie' : this.elapsed < this.landingUntil ? 'land' : slope < -.6 ? 'quarter' : slope > .6 ? 'pump' : axis > 0 && Math.floor(this.elapsed / 200) % 3 === 0 ? 'push' : 'ride';
-    this.rider.setFrame(pose).setPosition(b.x, b.feet + 1).setAngle(this.hooks.reducedMotion ? 0 : b.airborne ? -6 : pose === 'quarter' ? 0 : Math.max(-45, Math.min(45, Math.atan(slope) * 180 / Math.PI)));
+    this.rider.setFrame(pose).setPosition(b.x, b.feet + 1).setAngle(this.easeTilt(this.hooks.reducedMotion ? 0 : b.airborne ? -6 : pose === 'quarter' ? 0 : Math.max(-45, Math.min(45, Math.atan(slope) * 180 / Math.PI))));
     this.rider.setDisplaySize(50 * this.rider.frame.realWidth / this.rider.frame.realHeight, 50).setTint(this.elapsed < this.protectedUntil ? 0xd2f1ed : 0xffffff);
     this.target.setPosition(b.x, 135);
     const pct = Math.min(100, Math.round(b.x / this.level.finish * 100));
@@ -97,6 +101,12 @@ export class Skatepark extends Phaser.Scene {
     this.hud.setText(`QUARTERS ${b.quarters.size}/4 · ★ ${this.collected} · ${pct}%`);
     this.hint.setVisible(this.elapsed < 5000);
     document.getElementById('status')!.textContent = `SKATEPARK · ${b.quarters.size} quarters · ${b.ollies} salts · ${this.bumps} ensopegades · ${pct}%`;
+  }
+  // Board angle eases over ~60 ms: ramp lips and ollies no longer snap the rider.
+  private easeTilt(target: number) {
+    const dt = this.elapsed - this.paintedAt; this.paintedAt = this.elapsed;
+    this.tilt = this.hooks.reducedMotion ? target : this.tilt + (target - this.tilt) * (1 - Math.exp(-dt / 60));
+    return this.tilt;
   }
   complete() {
     this.finished = true; this.scene.pause();

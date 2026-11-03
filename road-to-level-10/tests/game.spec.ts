@@ -1,5 +1,9 @@
 import { test, expect, type Page } from '@playwright/test';
 import levels from '../src/data/levels.json' with { type: 'json' };
+import invitation from '../src/data/invitation.json' with { type: 'json' };
+
+const chapterBar = (id: string) => levels.find(level => level.id === id)!.subtitle.toUpperCase();
+const invitationDetails = [invitation.date, invitation.time, invitation.venue].map(value => value || 'Per confirmar');
 
 async function choose(page: Page, title: string) {
   await page.goto('/');
@@ -51,7 +55,7 @@ test('all player interfaces use Catalan and the invitation names Nel', async ({ 
   await expect(page.locator('.level-card')).toHaveCount(7);
   await page.getByRole('button', { name: 'Veure la invitació ↗' }).click();
   await expect(page.getByRole('heading', { name: 'En Nel arriba al nivell 10!' })).toBeVisible();
-  await expect(page.getByText('Per confirmar')).toHaveCount(3);
+  await expect(page.locator('.invitation-details dd')).toHaveText(invitationDetails);
   await expect(page.getByRole('button', { name: 'Tornar a l’inici' })).toBeVisible();
 });
 
@@ -94,7 +98,7 @@ test('toddler finds the toy motorcycle before continuing to the rear-view race',
   await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
   await expect(page.getByText(/Has trobat la teva moto de joguina, Nel!/)).toBeVisible();
   await page.getByRole('button', { name: /Següent: Cap a l’escola bressol/ }).click();
-  await expect(page.locator('#chapter')).toContainText('LA PRIMERA MOTO');
+  await expect(page.locator('#chapter')).toContainText(chapterBar('moto'));
   expect(errors).toEqual([]);
 });
 
@@ -190,7 +194,7 @@ test('hospital staff can be avoided and Nel meets his newborn brother before con
   test.setTimeout(45000);
   await page.setViewportSize({ width: 844, height: 390 });
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-  await choose(page, 'Coneixem el germanet!');
+  await choose(page, 'Ja ha nascut el IUC !');
   await page.keyboard.down('ArrowRight');
   // A missed dodge returns to the checkpoint and permits another attempt.
   await expect(page.locator('#status')).toContainText('1 ensopegades', { timeout: 6000 });
@@ -208,7 +212,7 @@ test('hospital staff can be avoided and Nel meets his newborn brother before con
   await expect(page.getByRole('button', { name: /Següent:/ })).not.toBeVisible();
   await expect(page.getByText(/Ja ets el germà gran, Nel!/)).toBeVisible();
   await page.getByRole('button', { name: /Següent:/ }).click();
-  await expect(page.locator('#chapter')).toContainText('SURF DE NEU');
+  await expect(page.locator('#chapter')).toContainText(chapterBar('snow'));
   expect(errors).toEqual([]);
 });
 
@@ -216,9 +220,9 @@ test('pause, chapter skip, invitation and sound work in the full campaign', asyn
   await choose(page, 'Les primeres passes');
   await page.getByRole('button', { name: 'Pausa', exact: true }).click();
   await page.getByRole('button', { name: 'Ometre aquest capítol →' }).click();
-  await expect(page.locator('#chapter')).toContainText('LA PRIMERA MOTO');
+  await expect(page.locator('#chapter')).toContainText(chapterBar('moto'));
   await page.getByRole('button', { name: 'Veure la invitació ↗' }).click();
-  await expect(page.getByText('Per confirmar')).toHaveCount(3);
+  await expect(page.locator('.invitation-details dd')).toHaveText(invitationDetails);
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Tornar al joc' }).click();
   await page.getByRole('button', { name: 'Continuar jugant →' }).click();
@@ -231,13 +235,13 @@ test('pause, chapter skip, invitation and sound work in the full campaign', asyn
 
 test('forest supports tree climbing, a zipline and jumping between two vines', async ({ page }) => {
   test.setTimeout(45000);
-  await choose(page, 'Aventura entre les capçades');
+  await choose(page, "Anem a la selva de l'aventura");
   await playForest(page);
 });
 
 test('river prevents bypassing the zipline on foot and permits a safe retry', async ({ page }) => {
   test.setTimeout(45000);
-  await choose(page, 'Aventura entre les capçades');
+  await choose(page, "Anem a la selva de l'aventura");
   await page.keyboard.down('ArrowRight');
   await expect(page.locator('#status')).toContainText('1 ensopegades', { timeout: 7000 });
   await page.keyboard.up('ArrowRight');
@@ -250,7 +254,7 @@ test('river prevents bypassing the zipline on foot and permits a safe retry', as
 
 test('skatepark rides four curved quarters and reaches the invitation', async ({ page }) => {
   test.setTimeout(45000);
-  await choose(page, 'Al skatepark fins al nivell 10');
+  await choose(page, "A tope amb l'skate!");
   await page.keyboard.down('ArrowRight');
   for (let i = 0; i < 85; i++) {
     if (await page.getByRole('button', { name: /Descobrir la invitació/ }).isVisible()) break;
@@ -265,7 +269,7 @@ test('skatepark rides four curved quarters and reaches the invitation', async ({
 
 test('snowboard descends a slope, jumps and can complete the run', async ({ page }) => {
   test.setTimeout(45000);
-  await choose(page, 'Surf de neu: tot de baixada!');
+  await choose(page, 'Snow: Anem a la Neu!');
   await expect(page.locator('#status')).toContainText('SURF DE NEU');
   await page.keyboard.down('ArrowRight');
   for (let i = 0; i < 65; i++) {
@@ -315,7 +319,7 @@ test('mobile offers simultaneous movement and jump, and a dedicated climbing but
   await expect(page.getByRole('button', { name: 'Empènyer', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Grimpar', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Saltar', exact: true })).toHaveCount(0);
-  await choose(page, 'Aventura entre les capçades');
+  await choose(page, "Anem a la selva de l'aventura");
   await expect(page.getByRole('button', { name: 'Grimpar', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Veure la invitació ↗' }).tap();
   await expect(page.getByRole('heading', { name: 'En Nel arriba al nivell 10!' })).toBeVisible();
