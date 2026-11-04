@@ -173,6 +173,13 @@ export class PlatformLevel extends Phaser.Scene {
     } else if (this.level.mode === 'hospital') {
       this.hospitalBed = this.add.image(this.level.finish + 32, 230, 'hospital', 'bed').setOrigin(.5, 1).setDepth(5);
       this.hospitalBed.setDisplaySize(100, 100 * this.hospitalBed.frame.height / this.hospitalBed.frame.width);
+    } else if (this.level.mode === 'nature') {
+      // The lookout waits with a skateboard: a teaser for the last chapter.
+      const board = this.add.image(this.level.finish + 6, this.level.goalY, skateboardTexture(this)).setOrigin(.5, 1).setDepth(6);
+      if (!this.hooks.reducedMotion) {
+        const shine = this.add.rectangle(board.x + 9, board.y - 12, 2, 2, 0xffffff).setDepth(7);
+        this.tweens.add({ targets: shine, alpha: .1, duration: 520, yoyo: true, repeat: -1 });
+      }
     } else {
       const goal = this.add.image(this.level.finish + 6, this.level.goalY, 'foods', this.level.mode === 'skate' ? 'cake' : 'bear').setOrigin(.5, 1).setDepth(4);
       goal.setDisplaySize(this.level.mode === 'skate' ? 31 : 25, this.level.mode === 'skate' ? 31 : 27);
@@ -450,4 +457,23 @@ export class PlatformLevel extends Phaser.Scene {
     }
     this.hooks.complete(this.level, this.level.mode === 'hospital' ? 'Ja ets el germà gran, Nel! Has travessat l’hospital i has conegut el teu germanet amb la mama. Quin record més especial!' : this.level.mode === 'baby' ? 'Has trobat la mama, Nel! Has passat per damunt del gos i has construït les teves escales fins a arribar als seus braços.' : this.level.mode === 'toddler' ? 'Has trobat la teva moto de joguina, Nel! Ara que ja camines i saltes, toca pujar-hi i anar cap a l’escola bressol.' : this.level.mode === 'skate' ? `Nivell 10, Nel! Has arribat a la festa amb ${this.collected} records. Ara toca celebrar-ho junts.` : `Record completat! Has recollit ${this.collected} de ${this.level.stars.length} estrelles i has fet ${this.jumps} salts. T’espera una nova aventura.`);
   }
+}
+
+// Small side-view pixel skateboard, drawn once and cached as a texture.
+function skateboardTexture(scene: Phaser.Scene) {
+  const key = 'goal-skateboard';
+  if (scene.textures.exists(key)) return key;
+  const g = scene.make.graphics({}, false);
+  const px = (color: number, x: number, y: number, w = 1, h = 1) => g.fillStyle(color).fillRect(x, y, w, h);
+  const grip = 0x2b2a35, deck = 0xe8673c, edge = 0xa8402a, stripe = 0xffd84d, truck = 0x9aa7ad, wheel = 0xf4efe3, shade = 0xc2b79f;
+  // Kicktails rise two pixels at each end; grip tape on top, painted deck below.
+  px(grip, 0, 0, 2); px(grip, 2, 1, 2); px(grip, 4, 2, 28); px(grip, 32, 1, 2); px(grip, 34, 0, 2);
+  px(deck, 0, 1, 2); px(deck, 2, 2, 2); px(deck, 3, 3, 30); px(deck, 32, 2, 2); px(deck, 34, 1, 2);
+  px(stripe, 12, 3, 12); px(edge, 5, 4, 26);
+  for (const x of [7, 23]) {
+    px(truck, x, 5, 6); px(truck, x + 2, 6, 2);
+    for (const wx of [x - 1, x + 4]) { px(wheel, wx, 6, 3, 3); px(shade, wx, 8, 3); }
+  }
+  g.generateTexture(key, 36, 9); g.destroy();
+  return key;
 }
